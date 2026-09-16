@@ -1,0 +1,25 @@
+{
+  "name": "HSEQ Field Master Pro - Grupo Eulen Colombia",
+  "short_name": "Eulen HSEQ",
+  "description": "Sistema móvil de inspección, geolocalización satelital y bitácora para Grupo Eulen Colombia",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#002664",
+  "theme_color": "#002664",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "assets/logo-eulen-light.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/logo-eulen-light.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "utilities"]
+}

@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>HSEQ Field Master Pro | Grupo Eulen Colombia</title>
+
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#002664">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Eulen HSEQ Pro">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- SheetJS / XLSX Library for Excel Generation -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Montserrat', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              navy: '#002664',    /* Deep Corporate Navy Grupo Eulen */
+              cream: '#e8e6df',   /* Warm Off-White / Grey Background */
+              red: '#f5333f',     /* Safety Red Accent / Danger */
+              blue: '#00a9e0',    /* Vibrant Safety Blue / Cyan */
+              dark: '#011538',    /* Darker Navy for Contrast Cards */
+              amber: '#f59e0b',   /* Unsafe Condition Warning */
+              purple: '#8b5cf6'   /* Training Accent */
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --color-brand-navy: #002664;
+      --color-brand-cream: #e8e6df;
+      --color-brand-red: #f5333f;
+      --color-brand-blue: #00a9e0;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: #e8e6df;
+      color: #002664;
+      -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
+    }
+
+    .navy-card {
+      background: #002664;
+      color: #ffffff;
+      border: 1px solid rgba(0, 169, 224, 0.25);
+    }
+
+    .glass-input {
+      background: #ffffff;
+      border: 1.5px solid rgba(0, 38, 100, 0.2);
+      color: #002664;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .glass-input:focus {
+      border-color: #00a9e0;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 169, 224, 0.2);
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #e8e6df;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #002664;
+      border-radius: 4px;
+    }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.9; }
+      50% { transform: scale(1.25); opacity: 0.4; }
+      100% { transform: scale(0.95); opacity: 0.9; }
+    }
+    .gps-active-indicator {
+      animation: pulse-ring 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased pb-12 bg-brand-cream text-brand-navy">
+
+  <!-- TOP PROTOCOL / PERMISSIONS ALERT BANNER (Active only if HTTP or permissions blocked) -->
+  <div id="protocol-warning-banner" class="hidden bg-amber-500 text-brand-dark px-4 py-2 text-xs font-bold text-center flex items-center justify-center gap-2 border-b border-amber-600">
+    <i class="fa-solid fa-triangle-exclamation text-base"></i>
+    <span id="protocol-warning-text">Aviso: Para habilitar Cámara y GPS en teléfonos móviles, despliega en HTTPS (Vercel) o autoriza permisos en tu navegador.</span>
+    <button onclick="openPermissionsModal()" class="underline font-black hover:text-white ml-2">Verificar Diagnóstico</button>
+  </div>
+
+  <!-- HEADER NAVBAR -->
+  <header class="sticky top-0 z-40 w-full bg-brand-navy text-white border-b border-brand-blue/30 px-4 py-3 shadow-lg">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center space-x-3">
+        <div class="h-10 md:h-12 px-2.5 py-1 bg-white rounded-xl flex items-center justify-center shadow-md border border-white/30">
+          <img src="assets/logo-eulen-light.jpg" alt="Grupo Eulen Colombia" class="h-7 md:h-8 w-auto object-contain">
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm md:text-lg font-black tracking-tight text-white leading-tight">
+              HSEQ <span class="text-[10px] md:text-xs px-2.5 py-0.5 rounded-full bg-brand-blue text-white font-extrabold shadow-sm">Field Master Pro</span>
+            </h1>
+            <span class="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded bg-white/10 text-brand-cream border border-white/20 hidden sm:inline-block">Colombia</span>
+          </div>
+          <p id="header-inspector-tag" class="text-[11px] md:text-xs text-brand-cream/80 font-bold mt-0.5">Inspector: Grupo Eulen Colombia</p>
+        </div>
+      </div>
+
+      <!-- Live GPS Pill, Diagnostics & Tabs -->
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+        
+        <!-- GPS Status Pill -->
+        <div id="header-gps-pill" onclick="openShareModal()" title="GPS Activo - Clic para compartir ubicación" class="cursor-pointer px-3 py-1.5 rounded-xl bg-white/10 border border-brand-blue/40 flex items-center gap-2 hover:bg-white/20 transition shadow-sm">
+          <span id="gps-status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 gps-active-indicator"></span>
+          <div class="hidden sm:flex flex-col text-left">
+            <span class="text-[10px] font-black text-brand-blue leading-none">GPS EULEN</span>
+            <span id="header-gps-coords" class="text-[10px] font-mono text-white font-bold leading-tight mt-0.5">Obteniendo alta precisión...</span>
+          </div>
+          <i class="fa-solid fa-share-nodes text-xs text-brand-blue ml-0.5"></i>
+        </div>
+
+        <!-- Diagnostics Button -->
+        <button onclick="openPermissionsModal()" title="Diagnóstico de permisos Cámara y GPS" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-brand-blue/30 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+          <i class="fa-solid fa-shield-virus text-emerald-400"></i>
+          <span class="hidden md:inline text-[11px]">Permisos</span>
+        </button>
+
+        <!-- Navigation Tabs (Only 3 essential tabs) -->
+        <div class="flex items-center gap-1.5">
+          <button id="btn-tab-editor" onclick="switchTab('editor')" class="px-3 py-2 rounded-xl text-xs md:text-sm font-black transition flex items-center gap-1.5 bg-brand-blue text-white shadow-md">
+            <i class="fa-solid fa-camera text-xs md:text-sm"></i> <span class="hidden md:inline">Captura & Estampa</span>
+          </button>
+          <button id="btn-tab-tracker" onclick="switchTab('tracker')" class="px-3 py-2 rounded-xl text-xs md:text-sm font-bold text-white/90 hover:bg-white/10 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-route text-xs md:text-sm text-brand-blue"></i> <span class="hidden md:inline">Rastreo GPS</span>
+          </button>
+          <button id="btn-tab-chatbot" onclick="switchTab('chatbot')" class="px-3 py-2 rounded-xl text-xs md:text-sm font-bold text-white/90 hover:bg-white/10 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-robot text-xs md:text-sm text-purple-300"></i> <span class="hidden md:inline">Asistente Bitácora</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- VIEW 1: EDITOR & LIVE CAMERA -->
+    <div id="view-editor" class="lg:col-span-12 grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
+
+      <!-- LEFT FORM CONTROLS (5 Cols) -->
+      <section class="lg:col-span-5 flex flex-col gap-5">
+
+        <!-- STEP 1: CATEGORY SELECTION -->
+        <div class="bg-white p-5 rounded-2xl border border-brand-navy/15 shadow-md space-y-3.5">
+          <label class="block text-xs font-black uppercase tracking-wider text-brand-navy flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-brand-blue text-sm"></i> 1. Tipo de Registro HSEQ Eulen
+          </label>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5" id="category-options">
+            <button type="button" onclick="selectCategory('Acto Inseguro')" data-cat="Acto Inseguro" class="cat-btn min-h-[56px] flex flex-col items-center justify-center p-2.5 rounded-xl border-2 border-brand-red bg-brand-red/10 text-brand-red text-xs font-black hover:bg-brand-red hover:text-white transition text-center gap-1 shadow-sm">
+              <i class="fa-solid fa-triangle-exclamation text-base"></i> Acto Inseguro
+            </button>
+            <button type="button" onclick="selectCategory('Condición Insegura')" data-cat="Condición Insegura" class="cat-btn min-h-[56px] flex flex-col items-center justify-center p-2.5 rounded-xl border-2 border-amber-500 bg-amber-500/10 text-amber-700 text-xs font-black hover:bg-amber-500 hover:text-white transition text-center gap-1 shadow-sm">
+              <i class="fa-solid fa-radiation text-base"></i> Condición Insegura
+            </button>
+            <button type="button" onclick="selectCategory('Problemática Ambiental')" data-cat="Problemática Ambiental" class="cat-btn min-h-[56px] flex flex-col items-center justify-center p-2.5 rounded-xl border-2 border-emerald-600 bg-emerald-600/10 text-emerald-700 text-xs font-black hover:bg-emerald-600 hover:text-white transition text-center gap-1 shadow-sm">
+              <i class="fa-solid fa-leaf text-base"></i> Ambiental
+            </button>
+            <button type="button" onclick="selectCategory('Seguimiento Diario')" data-cat="Seguimiento Diario" class="cat-btn min-h-[56px] flex flex-col items-center justify-center p-2.5 rounded-xl border-2 border-brand-blue bg-brand-blue/10 text-brand-navy text-xs font-black hover:bg-brand-blue hover:text-white transition text-center gap-1 border-3 shadow-md">
+              <i class="fa-solid fa-clipboard-check text-base text-brand-blue"></i> Seguimiento Eulen
+            </button>
+            <button type="button" onclick="selectCategory('Formación HSEQ')" data-cat="Formación HSEQ" class="cat-btn min-h-[56px] flex flex-col items-center justify-center p-2.5 rounded-xl border-2 border-purple-600 bg-purple-600/10 text-purple-700 text-xs font-black hover:bg-purple-600 hover:text-white transition text-center gap-1 sm:col-span-2 shadow-sm">
+              <i class="fa-solid fa-graduation-cap text-base"></i> Capacitación / Charla 5 Min
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 2: CAMERA CAPTURE / UPLOAD CONTROLS -->
+        <div class="bg-white p-5 rounded-2xl border border-brand-navy/15 shadow-md space-y-4">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-black uppercase tracking-wider text-brand-navy flex items-center gap-2">
+              <i class="fa-solid fa-camera-retro text-brand-blue text-sm"></i> 2. Captura Fotográfica Móvil
+            </label>
+            <span class="text-[10px] bg-brand-cream text-brand-navy font-bold px-2 py-1 rounded-lg border border-brand-navy/15 flex items-center gap-1">
+              <i class="fa-solid fa-circle-check text-emerald-600"></i> Logo Eulen Automático
+            </span>
+          </div>
+
+          <!-- Live Camera Stream UI -->
+          <div id="camera-stream-container" class="relative rounded-2xl overflow-hidden bg-brand-navy border border-brand-navy/20 aspect-[4/3] flex flex-col items-center justify-center shadow-inner">
+            <video id="webcam-video" autoplay playsinline class="w-full h-full object-cover hidden"></video>
+            
+            <div id="camera-placeholder" class="p-6 text-center flex flex-col items-center justify-center text-white space-y-2">
+              <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20 mb-1">
+                <i class="fa-solid fa-camera text-2xl text-brand-blue"></i>
+              </div>
+              <p class="text-xs font-black text-white">Cámara Lista para Inspección</p>
+              <p class="text-[11px] text-brand-cream/80 max-w-xs leading-relaxed">Presiona "Abrir Cámara" para capturar en vivo con el lente de tu smartphone o sube una imagen de la galería.</p>
+            </div>
+
+            <!-- Live Camera Controls Toolbar Overlay -->
+            <div id="camera-controls-bar" class="absolute bottom-3 left-3 right-3 hidden flex items-center justify-between gap-2.5 bg-brand-navy/90 backdrop-blur-md p-2.5 rounded-xl border border-white/20 shadow-lg z-10">
+              <button type="button" onclick="switchCameraFacing()" title="Voltear Cámara Trasera/Frontal" class="p-2.5 rounded-lg bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition flex items-center justify-center w-10 h-10">
+                <i class="fa-solid fa-camera-rotate text-sm text-brand-blue"></i>
+              </button>
+              <button type="button" onclick="toggleTorch()" id="btn-torch" title="Linterna / Flash" class="p-2.5 rounded-lg bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition flex items-center justify-center w-10 h-10">
+                <i class="fa-solid fa-bolt text-sm text-amber-300"></i>
+              </button>
+              <button type="button" onclick="captureLiveSnapshot()" class="flex-1 py-2.5 px-3 rounded-lg bg-brand-red text-white font-black text-xs shadow-md transition flex items-center justify-center gap-2 hover:bg-red-600">
+                <i class="fa-solid fa-circle-dot text-base"></i> CAPTURAR FOTO
+              </button>
+              <button type="button" onclick="stopCameraStream()" title="Cerrar Cámara" class="p-2.5 rounded-lg bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition flex items-center justify-center w-10 h-10">
+                <i class="fa-solid fa-xmark text-sm text-red-400"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Upload Inputs Grid -->
+          <div class="grid grid-cols-2 gap-2.5">
+            <button type="button" onclick="startLiveCamera()" class="w-full py-3 px-3 rounded-xl bg-brand-navy hover:bg-brand-blue text-white font-bold text-xs transition flex items-center justify-center gap-2 shadow-sm">
+              <i class="fa-solid fa-video text-brand-blue"></i> Abrir Cámara
+            </button>
+            <label class="w-full py-3 px-3 rounded-xl bg-brand-navy hover:bg-brand-blue text-white font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer text-center shadow-sm">
+              <i class="fa-solid fa-image text-emerald-400"></i> Subir Galería
+              <input type="file" id="input-inspection-photo" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
+            </label>
+          </div>
+
+          <!-- Permanent Logo Confirmation (No manual logo upload needed) -->
+          <div class="pt-3 border-t border-slate-200/80 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <img src="assets/logo-eulen-light.jpg" alt="Logo Grupo Eulen" class="h-6 w-auto object-contain border border-slate-200 rounded p-0.5 bg-white">
+              <span class="text-xs font-bold text-brand-navy">Logo Grupo Eulen Colombia fijado</span>
+            </div>
+            <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md border border-emerald-300">
+              <i class="fa-solid fa-lock mr-1"></i> Oficial
+            </span>
+          </div>
+        </div>
+
+        <!-- STEP 3: INSPECTION DETAILS -->
+        <div class="bg-white p-5 rounded-2xl border border-brand-navy/15 shadow-md space-y-4">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-black uppercase tracking-wider text-brand-navy flex items-center gap-2">
+              <i class="fa-solid fa-pen-to-square text-brand-blue text-sm"></i> 3. Datos del Sitio & Bitácora
+            </label>
+            <button type="button" onclick="openStartModal()" class="text-[11px] text-brand-blue hover:text-brand-navy font-extrabold flex items-center gap-1 transition">
+              <i class="fa-solid fa-user-gear"></i> Config Inspector
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label class="text-xs text-brand-navy font-bold mb-1.5 block">Cliente / Sede de Servicio *</label>
+              <input type="text" id="input-client" value="Grupo Eulen Colombia - Operaciones" class="w-full text-xs font-bold px-3.5 py-2.5 rounded-xl glass-input" oninput="updateCanvas()">
+            </div>
+            <div>
+              <label class="text-xs text-brand-navy font-bold mb-1.5 block">Proyecto / Frente de Trabajo *</label>
+              <input type="text" id="input-project" value="Sede Principal / Centro Logístico" class="w-full text-xs font-bold px-3.5 py-2.5 rounded-xl glass-input" oninput="updateCanvas()">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label class="text-xs text-brand-navy font-bold mb-1.5 block">Servicio / Actividad Desarrollada</label>
+              <select id="input-activity" class="w-full text-xs font-bold px-3 py-2.5 rounded-xl glass-input cursor-pointer" onchange="updateCanvas()">
+                <option value="Servicios de Seguridad y Vigilancia">Servicios de Seguridad y Vigilancia</option>
+                <option value="Facility Services / Mantenimiento Integral">Facility Services / Mantenimiento</option>
+                <option value="Servicios de Limpieza Especializada">Servicios de Limpieza Especializada</option>
+                <option value="Trabajo en Alturas (>1.50m)">Trabajo en Alturas (>1.50m)</option>
+                <option value="Espacios Confinados">Espacios Confinados</option>
+                <option value="Inspección de Equipos y Herramientas">Inspección de Equipos y Herramientas</option>
+                <option value="Trabajo en Caliente / Corte y Soldadura">Trabajo en Caliente / Corte</option>
+                <option value="Capacitación / Charla 5 Minutos HSEQ">Capacitación / Charla HSEQ</option>
+                <option value="Verificación de EPP & Bioseguridad">Verificación EPP & Bioseguridad</option>
+                <option value="Auditoría / Recorrido Rutinario HSEQ">Auditoría / Recorrido Rutinario</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-brand-navy font-bold mb-1.5 block">Estado del Clima</label>
+              <select id="input-weather" class="w-full text-xs font-bold px-3 py-2.5 rounded-xl glass-input cursor-pointer" onchange="updateCanvas()">
+                <option value="☀️ Soleado | 24°C">☀️ Soleado | 24°C</option>
+                <option value="⛅ Parcialmente Nublado | 20°C">⛅ Parcialmente Nublado | 20°C</option>
+                <option value="☁️ Nublado | 18°C">☁️ Nublado | 18°C</option>
+                <option value="🌧️ Lluvia Moderada | 16°C">🌧️ Lluvia Moderada | 16°C</option>
+                <option value="⛈️ Tormenta Eléctrica | 14°C">⛈️ Tormenta Eléctrica | 14°C</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- GPS Section with High-Accuracy Trigger -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-xs text-brand-navy font-bold">Ubicación GPS (Alta Precisión Chip Móvil)</label>
+              <button type="button" onclick="getGPSLocationHighAccuracy()" class="text-[11px] text-brand-blue hover:text-brand-navy font-black flex items-center gap-1 transition">
+                <i class="fa-solid fa-location-crosshairs"></i> Forzar GPS Exacto
+              </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <input type="text" id="input-coords" value="Obteniendo coordenadas..." class="sm:col-span-2 text-xs font-mono font-bold px-3.5 py-2.5 rounded-xl glass-input" oninput="updateCanvas()">
+              <input type="text" id="input-city" value="Bogotá D.C., Colombia" class="text-xs font-bold px-3.5 py-2.5 rounded-xl glass-input" oninput="updateCanvas()">
+            </div>
+            <p id="gps-accuracy-feedback" class="text-[10px] text-brand-blue font-bold mt-1">Margen de precisión estimada: Buscando...</p>
+          </div>
+
+          <!-- Field Observation / Situation -->
+          <div>
+            <label class="text-xs text-brand-navy font-bold mb-1.5 block">Observación / Hallazgo HSEQ en Campo</label>
+            <textarea id="input-description" rows="3" class="w-full text-xs font-semibold px-3.5 py-2.5 rounded-xl glass-input resize-none" oninput="updateCanvas()" placeholder="Describe el hallazgo o condición evidenciada...">Personal de Grupo Eulen cuenta con dotación, EPP completo y análisis de trabajo seguro ATS verificado en sitio.</textarea>
+          </div>
+
+          <!-- Overlay Style Toggle & Opacity Slider -->
+          <div class="pt-3 border-t border-slate-200/80 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-brand-navy font-bold">Estilo del Vidrio Overlay</span>
+              <div class="flex items-center gap-4">
+                <label class="text-[11px] text-brand-navy font-bold flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" name="overlay-style" value="dark" checked onchange="handleOverlayStyleChange()" class="accent-brand-blue"> Azul Eulen Translúcido
+                </label>
+                <label class="text-[11px] text-brand-navy font-bold flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" name="overlay-style" value="light" onchange="handleOverlayStyleChange()" class="accent-brand-blue"> Blanco / Claro Tenue
+                </label>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-3">
+              <label for="input-overlay-opacity" class="text-xs text-brand-navy font-bold whitespace-nowrap">Opacidad / Transparencia:</label>
+              <input type="range" id="input-overlay-opacity" min="0.30" max="0.95" step="0.05" value="0.82" oninput="updateCanvas()" class="w-full accent-brand-blue cursor-pointer">
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- RIGHT PREVIEW CANVAS & DOWNLOADS (7 Cols) -->
+      <section class="lg:col-span-7 flex flex-col items-center">
+        <div class="sticky top-20 w-full bg-white p-5 md:p-6 rounded-2xl border border-brand-navy/15 shadow-md flex flex-col items-center">
+          
+          <div class="w-full flex items-center justify-between mb-3.5">
+            <h2 class="text-sm font-black text-brand-navy flex items-center gap-2">
+              <i class="fa-solid fa-eye text-brand-blue text-base"></i> Vista Previa de Estampa Fotográfica
+            </h2>
+            <span class="text-[10px] text-brand-navy/70 font-mono font-bold bg-brand-cream px-2.5 py-1 rounded-lg border border-brand-navy/15">Eulen Canvas 1080p HD</span>
+          </div>
+
+          <!-- Hidden Image Loaders for Logo and Inspection Photo -->
+          <img id="img-inspection-source" class="hidden" alt="Source Inspection">
+          <!-- Dual Logos: Dark background and Light background -->
+          <img id="img-logo-dark" src="assets/logo-eulen-dark.jpg" class="hidden" alt="Eulen Logo Dark">
+          <img id="img-logo-light" src="assets/logo-eulen-light.jpg" class="hidden" alt="Eulen Logo Light">
+
+          <!-- Main Render Canvas -->
+          <div class="relative w-full aspect-[4/3] bg-brand-navy rounded-2xl overflow-hidden shadow-lg border border-brand-navy/20 flex items-center justify-center p-1">
+            <canvas id="hseq-canvas" class="w-full h-full object-contain rounded-xl"></canvas>
+          </div>
+
+          <!-- Action Download Button -->
+          <div class="w-full mt-5">
+            <button onclick="downloadStampImage()" class="w-full py-4 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm shadow-md transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-download text-lg"></i> Descargar Foto Estampada con Logo Eulen
+            </button>
+          </div>
+
+          <p class="text-[11px] text-brand-navy/80 text-center mt-3.5 font-semibold">
+            <i class="fa-solid fa-shield-halved text-brand-red mr-1"></i> El banner compacto preserva el área central de la fotografía para evidenciar la inspección con rigor técnico.
+          </p>
+
+        </div>
+      </section>
+
+    </div>
+
+    <!-- VIEW 2: GPS ROUTE TRACKER & EXCEL LOG -->
+    <div id="view-tracker" class="hidden lg:col-span-12 w-full space-y-6">
+
+      <div class="bg-brand-navy text-white p-5 rounded-2xl border border-brand-blue/30 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-black text-white flex items-center gap-2">
+            <i class="fa-solid fa-route text-brand-blue text-lg"></i> Monitoreo Continuo GPS - Grupo Eulen Colombia
+          </h2>
+          <p class="text-xs text-brand-cream/80 font-semibold mt-0.5">Registro satelital sistemático de recorridos de supervisión y auditoría en instalaciones de clientes.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5">
+          <button onclick="openShareModal()" class="px-4 py-2.5 rounded-xl bg-brand-blue text-white font-black text-xs hover:bg-blue-400 transition flex items-center gap-2 shadow-md">
+            <i class="fa-solid fa-paper-plane text-sm"></i> Compartir WhatsApp / Mapa
+          </button>
+          <button onclick="exportGPSToExcel()" class="px-4 py-2.5 rounded-xl bg-emerald-600 text-white font-black text-xs hover:bg-emerald-500 transition flex items-center gap-2 shadow-md">
+            <i class="fa-solid fa-file-excel text-sm"></i> Exportar Ruta a Excel (.XLSX)
+          </button>
+        </div>
+      </div>
+
+      <!-- Tracker Control Box & Live Status -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div class="bg-white p-5 rounded-2xl border border-brand-navy/15 shadow-md space-y-4 md:col-span-1">
+          <h3 class="text-xs font-black uppercase tracking-wider text-brand-navy">Estado del Sensor Satelital</h3>
+
+          <div class="p-4 bg-brand-cream rounded-2xl border border-brand-navy/15 space-y-2.5 text-xs font-bold text-brand-navy">
+            <div class="flex justify-between items-center">
+              <span>Sensor GPS Móvil:</span>
+              <span id="gps-status-label" class="font-black text-emerald-600 flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Activo
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span>Puntos Capturados:</span>
+              <span id="gps-count-label" class="font-black text-brand-blue">0</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Última Extracción:</span>
+              <span id="gps-last-time" class="font-mono text-brand-navy">--:--:--</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span>Coordenadas Actuales:</span>
+              <span id="gps-last-coords" class="font-mono text-brand-blue font-black truncate max-w-[140px]">Detectando...</span>
+            </div>
+          </div>
+
+          <button id="btn-toggle-tracking" onclick="toggleGPSTracking()" class="w-full py-3 px-4 rounded-xl bg-brand-red text-white font-black text-xs transition flex items-center justify-center gap-2 shadow-md hover:bg-red-600">
+            <i class="fa-solid fa-pause"></i> Pausar Rastreo Silencioso
+          </button>
+        </div>
+
+        <!-- Coords History Table -->
+        <div class="bg-white p-5 rounded-2xl border border-brand-navy/15 shadow-md md:col-span-2 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3.5">
+              <h3 class="text-xs font-black uppercase tracking-wider text-brand-navy">Historial de Ubicaciones Registradas</h3>
+              <button onclick="clearGPSLog()" class="text-[11px] text-brand-red hover:underline font-extrabold flex items-center gap-1">
+                <i class="fa-solid fa-trash-can"></i> Limpiar Tabla
+              </button>
+            </div>
+
+            <div class="max-h-72 overflow-y-auto rounded-xl border border-brand-navy/20">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead class="bg-brand-navy text-white sticky top-0 font-extrabold border-b border-brand-blue/40">
+                  <tr>
+                    <th class="p-3">#</th>
+                    <th class="p-3">Hora</th>
+                    <th class="p-3">Latitud / Longitud (DD)</th>
+                    <th class="p-3">Formato DMS (GMS)</th>
+                    <th class="p-3">Precisión</th>
+                  </tr>
+                </thead>
+                <tbody id="gps-log-tbody" class="divide-y divide-slate-200 font-mono text-[11px]">
+                  <tr>
+                    <td colspan="5" class="p-4 text-center text-brand-navy font-sans font-bold">Iniciando geolocalización automática...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <p class="text-[11px] text-brand-navy/80 mt-4 font-semibold">
+            <i class="fa-solid fa-circle-info text-brand-blue mr-1"></i> Formato dual compatible con importación inmediata a Google Earth, SIG o ArcGIS.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- VIEW 3: AI CHATBOT FIELD LOG ASSISTANT -->
+    <div id="view-chatbot" class="hidden lg:col-span-12 w-full space-y-6">
+      
+      <div class="bg-brand-navy text-white p-5 rounded-2xl border border-brand-blue/30 shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base font-black text-white flex items-center gap-2">
+            <i class="fa-solid fa-robot text-purple-300 text-lg"></i> Asistente de Bitácora HSEQ | Grupo Eulen
+          </h2>
+          <p class="text-xs text-brand-cream/80 font-semibold mt-0.5">Estructura tu reporte diario consolidado para la coordinación de seguridad y operaciones.</p>
+        </div>
+
+        <div class="flex items-center gap-2 w-full md:w-auto">
+          <button onclick="startChatbotWizard()" class="w-full md:w-auto px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs transition flex items-center justify-center gap-2 shadow-md">
+            <i class="fa-solid fa-rotate-right"></i> Reiniciar Entrevista
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left: Interactive Chat Window (7 Cols) -->
+        <div class="lg:col-span-7 flex flex-col h-[580px] bg-white rounded-2xl overflow-hidden border border-brand-navy/15 shadow-md">
+          
+          <div class="bg-brand-navy text-white px-4 py-3.5 border-b border-brand-blue/30 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center shadow-md">
+                <i class="fa-solid fa-headset text-white text-xs font-bold"></i>
+              </div>
+              <div>
+                <h3 class="text-xs font-black text-white">Chatbot Supervisor Eulen</h3>
+                <span class="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> En Línea
+                </span>
+              </div>
+            </div>
+            <button onclick="autoFillWithLoggedData()" class="text-[11px] bg-brand-blue hover:bg-blue-400 text-white font-black py-1.5 px-3 rounded-xl transition flex items-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Sincronizar GPS
+            </button>
+          </div>
+
+          <!-- Chat History Stream -->
+          <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3.5 bg-brand-cream/30">
+            <!-- Messages rendered dynamically -->
+          </div>
+
+          <!-- Input Bar -->
+          <div class="p-3.5 bg-white border-t border-brand-navy/15 flex items-center gap-2.5">
+            <input type="text" id="chat-user-input" onkeypress="if(event.key==='Enter') sendChatMessage()" placeholder="Escribe tu respuesta aquí..." class="flex-1 text-xs font-bold px-4 py-2.5 rounded-xl glass-input">
+            <button onclick="sendChatMessage()" class="p-2.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs transition flex items-center justify-center shadow-md">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: Generated Report Preview (5 Cols) -->
+        <div class="lg:col-span-5 flex flex-col h-[580px] bg-white rounded-2xl p-5 border border-brand-navy/15 shadow-md justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3.5">
+              <h3 class="text-xs font-black uppercase tracking-wider text-brand-navy flex items-center gap-2">
+                <i class="fa-solid fa-file-contract text-brand-blue"></i> Resumen de Jornada Eulen
+              </h3>
+              <span id="report-status-badge" class="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-400">En borrador</span>
+            </div>
+
+            <textarea id="output-generated-report" class="w-full h-[380px] text-xs font-mono p-3.5 rounded-xl glass-input resize-none bg-brand-navy text-white leading-relaxed" readonly placeholder="El reporte consolidado redactado por el asistente aparecerá aquí listo para enviar o descargar..."></textarea>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2.5 pt-3">
+            <button onclick="copyGeneratedReport()" class="py-2.5 px-3 rounded-xl bg-brand-navy hover:bg-brand-blue text-white font-black text-xs transition flex items-center justify-center gap-1.5 shadow-md">
+              <i class="fa-solid fa-copy text-brand-blue"></i> Copiar Texto
+            </button>
+            <button onclick="exportFullDayToExcel()" class="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs transition flex items-center justify-center gap-1.5 shadow-md">
+              <i class="fa-solid fa-file-excel"></i> Descargar Excel Eulen
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- MODAL 1: START JORNADA CHECK-IN -->
+  <div id="modal-start" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-navy/80 backdrop-blur-md hidden">
+    <div class="bg-white p-6 rounded-2xl max-w-md w-full border border-brand-blue/40 shadow-2xl space-y-5">
+      <div class="flex items-center gap-3 border-b border-brand-navy/15 pb-4">
+        <div class="w-10 h-10 rounded-xl bg-brand-red text-white flex items-center justify-center text-xl font-black shadow-md">
+          <i class="fa-solid fa-clipboard-user"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-black text-brand-navy">Inicio de Turno | Grupo Eulen Colombia</h3>
+          <p class="text-xs text-brand-navy/80 font-semibold mt-0.5">Verifica tus datos para vincular las fotos y recorrido GPS de hoy.</p>
+        </div>
+      </div>
+
+      <div class="space-y-3.5">
+        <div>
+          <label class="text-xs font-bold text-brand-navy mb-1.5 block">Nombre del Supervisor / Inspector *</label>
+          <input type="text" id="setup-inspector" value="Supervisor HSEQ Eulen" class="w-full text-xs font-bold px-3.5 py-2.5 rounded-xl glass-input">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-brand-navy mb-1.5 block">Cliente / Sede de Operación *</label>
+          <input type="text" id="setup-client" value="Grupo Eulen Colombia - Operaciones" class="w-full text-xs font-bold px-3.5 py-2.5 rounded-xl glass-input">
+        </div>
+        <div>
+          <label class="text-xs font-bold text-brand-navy mb-1.5 block">Proyecto / Frente Inicial *</label>
+          <input type="text" id="setup-project" value="Sede Principal / Centro Logístico" class="w-full text-xs font-bold px-3.5 py-2.5 rounded-xl glass-input">
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button onclick="saveStartConfig()" class="w-full py-3.5 rounded-xl bg-brand-blue hover:bg-brand-navy text-white font-black text-xs shadow-md transition">
+          <i class="fa-solid fa-circle-check mr-1.5"></i> INICIAR JORNADA Y ACTIVAR RASTREO
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: SHARE COORDINATES & WHATSAPP -->
+  <div id="modal-share" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-navy/80 backdrop-blur-md hidden">
+    <div class="bg-white p-6 rounded-2xl max-w-md w-full border border-brand-blue/40 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-brand-navy/15 pb-3.5">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-brand-blue text-white flex items-center justify-center text-lg font-black shadow-md">
+            <i class="fa-solid fa-share-nodes"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-black text-brand-navy">Compartir Ubicación GPS Eulen</h3>
+            <p class="text-xs text-brand-navy/80 font-semibold mt-0.5">Coordenadas instantáneas en tiempo real</p>
+          </div>
+        </div>
+        <button onclick="closeShareModal()" class="text-brand-navy hover:text-brand-red p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-4 bg-brand-cream rounded-2xl border border-brand-navy/15 space-y-2 text-xs font-mono">
+        <div class="text-brand-navy font-sans font-bold">Ubicación actual del Inspector:</div>
+        <div id="share-coords-text" class="text-brand-blue font-black text-sm">Detectando...</div>
+        <div id="share-time-text" class="text-brand-navy/70 text-[11px] font-semibold">--:--:--</div>
+      </div>
+
+      <div class="space-y-2.5 pt-1">
+        <button onclick="shareViaWhatsApp()" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md transition">
+          <i class="fa-brands fa-whatsapp text-lg"></i> ENVIAR POR WHATSAPP CON MAPA
+        </button>
+        <button onclick="copyMapsLink()" class="w-full py-2.5 rounded-xl bg-brand-navy hover:bg-brand-blue text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-sm">
+          <i class="fa-solid fa-link text-brand-blue"></i> Copiar Enlace Google Maps
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: PERMISSIONS & DIAGNOSTICS HELP MODAL -->
+  <div id="modal-permissions" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-navy/80 backdrop-blur-md hidden">
+    <div class="bg-white p-6 rounded-2xl max-w-lg w-full border border-brand-blue/40 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-brand-navy/15 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-brand-navy text-white flex items-center justify-center text-base font-black">
+            <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-black text-brand-navy">Diagnóstico de Permisos Móviles</h3>
+            <p class="text-[11px] text-brand-navy/70 font-semibold">Verificación de requisitos para pruebas en campo</p>
+          </div>
+        </div>
+        <button onclick="closePermissionsModal()" class="text-brand-navy hover:text-brand-red p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Live Diagnostics List -->
+      <div class="space-y-2 text-xs">
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-lock text-brand-navy"></i>
+            <div>
+              <p class="font-bold text-brand-navy">Protocolo Web (SSL/HTTPS)</p>
+              <p id="diag-protocol-detail" class="text-[10px] text-slate-500 font-semibold">Verificando...</p>
+            </div>
+          </div>
+          <span id="diag-protocol-badge" class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-100 text-emerald-800">OK</span>
+        </div>
+
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-location-dot text-brand-navy"></i>
+            <div>
+              <p class="font-bold text-brand-navy">Chip GPS / Geolocalización</p>
+              <p id="diag-gps-detail" class="text-[10px] text-slate-500 font-semibold">Verificando sensor...</p>
+            </div>
+          </div>
+          <span id="diag-gps-badge" class="px-2 py-0.5 rounded text-[10px] font-black bg-slate-200 text-slate-700">Comprobando</span>
+        </div>
+
+        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-camera text-brand-navy"></i>
+            <div>
+              <p class="font-bold text-brand-navy">Acceso a Cámara Móvil</p>
+              <p id="diag-camera-detail" class="text-[10px] text-slate-500 font-semibold">Verificando dispositivo de video...</p>
+            </div>
+          </div>
+          <span id="diag-camera-badge" class="px-2 py-0.5 rounded text-[10px] font-black bg-slate-200 text-slate-700">Comprobando</span>
+        </div>
+      </div>
+
+      <!-- Quick How-To Unblock -->
+      <div class="p-3 rounded-xl bg-blue-50 border border-blue-200 text-[11px] text-brand-navy space-y-1">
+        <p class="font-black text-brand-navy flex items-center gap-1">
+          <i class="fa-solid fa-circle-info text-brand-blue"></i> Si la cámara o el GPS aparecen bloqueados:
+        </p>
+        <p>• <strong>En Chrome (Android/PC):</strong> Toca el ícono de ajustes/candado 🔒 al lado de la barra de direcciones, entra a <em>Permisos</em> y activa <em>Cámara</em> y <em>Ubicación</em>.</p>
+        <p>• <strong>En Safari (iPhone/iOS):</strong> Toca el botón <em>aA</em> en la barra de URL > <em>Configuración del sitio web</em> > Activa <em>Cámara</em> y <em>Ubicación</em> en <em>Permitir</em>.</p>
+      </div>
+
+      <div class="pt-1 flex gap-2">
+        <button onclick="requestAllPermissions()" class="flex-1 py-2.5 px-3 rounded-xl bg-brand-blue text-white font-black text-xs hover:bg-brand-navy transition flex items-center justify-center gap-1.5 shadow-md">
+          <i class="fa-solid fa-rotate-right"></i> Solicitar / Reintentar Permisos
+        </button>
+        <button onclick="closePermissionsModal()" class="py-2.5 px-4 rounded-xl bg-slate-200 text-slate-800 font-bold text-xs hover:bg-slate-300 transition">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-brand-navy border border-brand-blue/50 text-white px-4.5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3">
+    <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+    <span id="toast-message" class="text-xs font-black">Operación completada</span>
+  </div>
+
+  <script>
+    let currentCategory = 'Seguimiento Diario';
+    let inspectionImageSrc = null;
+
+    // Global Inspector Profile State
+    let currentInspectorName = 'Supervisor HSEQ Eulen';
+
+    // Chatbot Wizard State & Data Model
+    let chatStep = 0;
+    let chatAnswers = {
+      startTime: '',
+      endTime: '',
+      clientCount: '',
+      keyIncidents: '',
+      trainingNotes: '',
+      generalSummary: ''
+    };
+
+    const chatQuestions = [
+      { key: 'startTime', prompt: '👋 ¡Hola Inspector de Grupo Eulen! Vamos a consolidar la bitácora de hoy. **¿A qué hora iniciaste el turno o recorrido?** (Ej: 06:30 AM)' },
+      { key: 'endTime', prompt: '⏰ **¿A qué hora finalizaste el servicio o la inspección de la última sede?** (Ej: 05:00 PM)' },
+      { key: 'clientCount', prompt: '🏭 **¿Cuántas sedes, puestos o frentes de clientes Eulen supervisaste hoy?**' },
+      { key: 'keyIncidents', prompt: '⚠️ **¿Se detectaron actos inseguros, condiciones anómalas o aspectos ambientales?** Descríbelos brevemente (o escribe "Sin novedades críticas").' },
+      { key: 'trainingNotes', prompt: '🎓 **¿Se realizó charla de 5 minutos, inducción o capacitación al personal?** Indícanos el tema tratado o responde "No aplica".' },
+      { key: 'generalSummary', prompt: '📝 **¿Conclusiones o indicaciones para el Administrador HSEQ / Operaciones?**' }
+    ];
+
+    // Mobile Camera Stream State
+    let mediaStream = null;
+    let facingMode = 'environment';
+    let torchEnabled = false;
+
+    // Automatic GPS Background Watcher State
+    let watchPositionId = null;
+    let gpsLogHistory = [];
+    let isTrackingGPS = true;
+    let latestLat = 4.6097; // Default Bogotá coords fallback
+    let latestLon = -74.0817;
+    let latestAccuracy = 0;
+
+    // Category Styling Definitions using Eulen Palette
+    const categoryConfig = {
+      'Acto Inseguro': { color: '#f5333f', badgeClass: 'bg-red-100 text-red-700 border-red-500' },
+      'Condición Insegura': { color: '#f59e0b', badgeClass: 'bg-amber-100 text-amber-800 border-amber-500' },
+      'Problemática Ambiental': { color: '#10b981', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-500' },
+      'Seguimiento Diario': { color: '#00a9e0', badgeClass: 'bg-sky-100 text-brand-navy border-brand-blue' },
+      'Formación HSEQ': { color: '#8b5cf6', badgeClass: 'bg-purple-100 text-purple-800 border-purple-500' }
+    };
+
+    window.onload = function() {
+      checkEnvironmentDiagnostics();
+      generateDefaultPlaceholderImage();
+      getGPSLocationHighAccuracy();
+      startAutomaticGPSWatch();
+      startChatbotWizard();
+
+      // Ensure logos are preloaded and trigger initial canvas render
+      preloadEulenLogos();
+
+      setTimeout(() => {
+        openStartModal();
+      }, 400);
+    };
+
+    function preloadEulenLogos() {
+      const darkLogo = document.getElementById('img-logo-dark');
+      const lightLogo = document.getElementById('img-logo-light');
+
+      let loadedCount = 0;
+      const onLogoLoad = () => {
+        loadedCount++;
+        if (loadedCount >= 1) updateCanvas();
+      };
+
+      if (darkLogo.complete) loadedCount++; else darkLogo.onload = onLogoLoad;
+      if (lightLogo.complete) loadedCount++; else lightLogo.onload = onLogoLoad;
+    }
+
+    // Diagnostics & Permissions Check
+    function checkEnvironmentDiagnostics() {
+      const isHttps = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const warningBanner = document.getElementById('protocol-warning-banner');
+      
+      const diagProtocolDetail = document.getElementById('diag-protocol-detail');
+      const diagProtocolBadge = document.getElementById('diag-protocol-badge');
+
+      if (!isHttps) {
+        warningBanner.classList.remove('hidden');
+        diagProtocolDetail.innerText = 'Advertencia: Servido por HTTP no seguro. Cámaras y GPS móviles requieren HTTPS.';
+        diagProtocolBadge.className = 'px-2 py-0.5 rounded text-[10px] font-black bg-amber-100 text-amber-800';
+        diagProtocolBadge.innerText = 'INSEGURO (HTTP)';
+      } else {
+        diagProtocolDetail.innerText = 'Conexión segura SSL (HTTPS o Entorno Local).';
+        diagProtocolBadge.className = 'px-2 py-0.5 rounded text-[10px] font-black bg-emerald-100 text-emerald-800';
+        diagProtocolBadge.innerText = 'SEGURO (HTTPS)';
+      }
+
+      // Check navigator.permissions if available
+      if (navigator.permissions && navigator.permissions.query) {
+        navigator.permissions.query({ name: 'geolocation' }).then(res => {
+          updateGPSDiagBadge(res.state);
+          res.onchange = () => updateGPSDiagBadge(res.state);
+        }).catch(() => {});
+
+        navigator.permissions.query({ name: 'camera' }).then(res => {
+          updateCameraDiagBadge(res.state);
+          res.onchange = () => updateCameraDiagBadge(res.state);
+        }).catch(() => {});
+      }
+    }
+
+    function updateGPSDiagBadge(state) {
+      const badge = document.getElementById('diag-gps-badge');
+      const detail = document.getElementById('diag-gps-detail');
+      if (state === 'granted') {
+        badge.className = 'px-2 py-0.5 rounded text-[10px] font-black bg-emerald-100 text-emerald-800';
+        badge.innerText = 'CONCEDIDO';
+        detail.innerText = 'Ubicación autorizada y activa para rastreo.';
+      } else if (state === 'denied') {
+        badge.className = 'px-2 py-0.5 rounded text-[10px] font-black bg-red-100 text-red-800';
+        badge.innerText = 'BLOQUEADO';
+        detail.innerText = 'El navegador bloqueó la ubicación. Debes desbloquearla en ajustes.';
+      } else {
+        badge.className = 'px-2 py-0.5 rounded text-[10px] font-black bg-amber-100 text-amber-800';
+        badge.innerText = 'PENDIENTE';
+        detail.innerText = 'El navegador solicitará autorización al activar el sensor.';
+      }
+    }
+
+    function updateCameraDiagBadge(state) {
+      const badge = document.getElementById('diag-camera-badge');
+      const detail = document.getElementById('diag-camera-detail');
+      if (state === 'granted') {
+        badge.className = 'px-2 py-0.5 rounded text-[10px] font-black bg-emerald-100 text-emerald-800';
+        badge.innerText = 'CONCEDIDO';
+        detail.innerText = 'Lente y stream de cámara autorizados.';
+      } else if (state === 'denied') {
+        badge.className = 'px-2 py-0.5 rounded text-[10px] font-black bg-red-100 text-red-800';
+        badge.innerText = 'BLOQUEADO';
+        detail.innerText = 'Acceso a cámara denegado. Se requiere habilitar en el navegador.';
+      } else {
+        badge.className = 'px-2 py-0.5 rounded text-[10px] font-black bg-amber-100 text-amber-800';
+        badge.innerText = 'PENDIENTE';
+        detail.innerText = 'Se solicitará al presionar "Abrir Cámara".';
+      }
+    }
+
+    function openPermissionsModal() {
+      checkEnvironmentDiagnostics();
+      document.getElementById('modal-permissions').classList.remove('hidden');
+    }
+
+    function closePermissionsModal() {
+      document.getElementById('modal-permissions').classList.add('hidden');
+    }
+
+    function requestAllPermissions() {
+      getGPSLocationHighAccuracy();
+      startLiveCamera();
+      setTimeout(checkEnvironmentDiagnostics, 1500);
+    }
+
+    // Tab Navigation Switcher
+    function switchTab(tab) {
+      const viewEditor = document.getElementById('view-editor');
+      const viewTracker = document.getElementById('view-tracker');
+      const viewChatbot = document.getElementById('view-chatbot');
+
+      const btnEditor = document.getElementById('btn-tab-editor');
+      const btnTracker = document.getElementById('btn-tab-tracker');
+      const btnChatbot = document.getElementById('btn-tab-chatbot');
+
+      viewEditor.classList.add('hidden');
+      viewTracker.classList.add('hidden');
+      if (viewChatbot) viewChatbot.classList.add('hidden');
+
+      btnEditor.className = "px-3 py-2 rounded-xl text-xs md:text-sm font-bold text-white/90 hover:bg-white/10 transition flex items-center gap-1.5";
+      btnTracker.className = "px-3 py-2 rounded-xl text-xs md:text-sm font-bold text-white/90 hover:bg-white/10 transition flex items-center gap-1.5 relative";
+      if (btnChatbot) btnChatbot.className = "px-3 py-2 rounded-xl text-xs md:text-sm font-bold text-white/90 hover:bg-white/10 transition flex items-center gap-1.5 relative";
+
+      if (tab === 'editor') {
+        viewEditor.classList.remove('hidden');
+        btnEditor.className = "px-3 py-2 rounded-xl text-xs md:text-sm font-black transition flex items-center gap-1.5 bg-brand-blue text-white shadow-md";
+      } else if (tab === 'tracker') {
+        viewTracker.classList.remove('hidden');
+        btnTracker.className = "px-3 py-2 rounded-xl text-xs md:text-sm font-black transition flex items-center gap-1.5 bg-brand-blue text-white shadow-md relative";
+      } else if (tab === 'chatbot') {
+        if (viewChatbot) viewChatbot.classList.remove('hidden');
+        if (btnChatbot) btnChatbot.className = "px-3 py-2 rounded-xl text-xs md:text-sm font-black transition flex items-center gap-1.5 bg-purple-600 text-white shadow-md relative";
+      }
+    }
+
+    /* HIGH ACCURACY GPS GEOLOCATION ENGINE WITH ROBUST FALLBACK */
+    function getGPSLocationHighAccuracy() {
+      if ("geolocation" in navigator) {
+        document.getElementById('gps-accuracy-feedback').innerText = "Solicitando satélites GPS Grupo Eulen...";
+        
+        const optionsHigh = {
+          enableHighAccuracy: true,
+          timeout: 12000,
+          maximumAge: 0
+        };
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            applyGPSPosition(position, true);
+          },
+          (err) => {
+            console.warn("High Accuracy GPS timed out or failed, trying standard accuracy fallback:", err);
+            const optionsStandard = {
+              enableHighAccuracy: false,
+              timeout: 10000,
+              maximumAge: 30000
+            };
+            navigator.geolocation.getCurrentPosition(
+              (pos) => applyGPSPosition(pos, false),
+              (fallbackErr) => {
+                console.error("GPS Fallback Error:", fallbackErr);
+                document.getElementById('gps-accuracy-feedback').innerText = "Señal GPS no disponible. Verifica permisos o activa ubicación en tu móvil.";
+                showToast("Verifica los permisos de ubicación GPS", "warning");
+              },
+              optionsStandard
+            );
+          },
+          optionsHigh
+        );
+      } else {
+        document.getElementById('gps-accuracy-feedback').innerText = "Tu navegador no soporta geolocalización.";
+      }
+    }
+
+    function applyGPSPosition(position, isHigh) {
+      latestLat = position.coords.latitude;
+      latestLon = position.coords.longitude;
+      latestAccuracy = Math.round(position.coords.accuracy);
+
+      const ddStr = `${latestLat.toFixed(6)}, ${latestLon.toFixed(6)}`;
+      document.getElementById('input-coords').value = ddStr;
+      document.getElementById('header-gps-coords').innerText = ddStr;
+      document.getElementById('gps-accuracy-feedback').innerText = `Precisión: +/- ${latestAccuracy}m (${isHigh ? 'Satelital Alta Precisión' : 'Modo Estándar'})`;
+
+      updateCanvas();
+      showToast(`GPS obtenido (+/- ${latestAccuracy}m)`, "success");
+    }
+
+    function startAutomaticGPSWatch() {
+      if ("geolocation" in navigator) {
+        const options = {
+          enableHighAccuracy: true,
+          maximumAge: 4000,
+          timeout: 15000
+        };
+
+        watchPositionId = navigator.geolocation.watchPosition(
+          (position) => {
+            if (!isTrackingGPS) return;
+            
+            latestLat = position.coords.latitude;
+            latestLon = position.coords.longitude;
+            const accuracy = position.coords.accuracy ? `${Math.round(position.coords.accuracy)}m` : 'N/A';
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('es-ES');
+
+            const ddStr = `${latestLat.toFixed(6)}, ${latestLon.toFixed(6)}`;
+            const dmsStr = `${toDMS(latestLat, true)}, ${toDMS(latestLon, false)}`;
+
+            document.getElementById('input-coords').value = ddStr;
+            document.getElementById('header-gps-coords').innerText = ddStr;
+
+            const shouldAdd = gpsLogHistory.length === 0 || 
+              Math.abs(gpsLogHistory[0].lat - latestLat) > 0.00004 || 
+              Math.abs(gpsLogHistory[0].lon - latestLon) > 0.00004;
+
+            if (shouldAdd) {
+              const point = {
+                index: gpsLogHistory.length + 1,
+                time: timeStr,
+                timestamp: now.toISOString(),
+                lat: latestLat,
+                lon: latestLon,
+                dd: ddStr,
+                dms: dmsStr,
+                accuracy: accuracy
+              };
+              gpsLogHistory.unshift(point);
+              updateGPSLogUI();
+            }
+
+            updateCanvas();
+          },
+          (err) => {
+            console.warn("Silent GPS watch notice:", err.message);
+          },
+          options
+        );
+      }
+    }
+
+    function toggleGPSTracking() {
+      isTrackingGPS = !isTrackingGPS;
+      const btn = document.getElementById('btn-toggle-tracking');
+      const statusLabel = document.getElementById('gps-status-label');
+
+      if (isTrackingGPS) {
+        statusLabel.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Activo`;
+        btn.className = "w-full py-3 px-4 rounded-xl bg-brand-red text-white font-black text-xs transition flex items-center justify-center gap-2 shadow-md hover:bg-red-600";
+        btn.innerHTML = `<i class="fa-solid fa-pause"></i> Pausar Rastreo Silencioso`;
+        showToast("Rastreo GPS reanudado", "success");
+      } else {
+        statusLabel.innerText = "Pausado";
+        btn.className = "w-full py-3 px-4 rounded-xl bg-emerald-600 text-white font-black text-xs transition flex items-center justify-center gap-2 shadow-md hover:bg-emerald-500";
+        btn.innerHTML = `<i class="fa-solid fa-play"></i> Reanudar Rastreo Silencioso`;
+        showToast("Rastreo GPS pausado", "info");
+      }
+    }
+
+    function openStartModal() {
+      document.getElementById('modal-start').classList.remove('hidden');
+    }
+
+    function saveStartConfig() {
+      const inspector = document.getElementById('setup-inspector').value.trim() || 'Supervisor HSEQ Eulen';
+      const client = document.getElementById('setup-client').value.trim() || 'Grupo Eulen Colombia';
+      const project = document.getElementById('setup-project').value.trim() || 'Operación General';
+
+      currentInspectorName = inspector;
+      document.getElementById('header-inspector-tag').innerText = `Inspector: ${inspector}`;
+      document.getElementById('input-client').value = client;
+      document.getElementById('input-project').value = project;
+
+      document.getElementById('modal-start').classList.add('hidden');
+      updateCanvas();
+      showToast(`Turno iniciado: ${inspector}`, "success");
+    }
+
+    function openShareModal() {
+      const ddStr = `${latestLat.toFixed(6)}, ${latestLon.toFixed(6)}`;
+      document.getElementById('share-coords-text').innerText = ddStr;
+      document.getElementById('share-time-text').innerText = `Fecha / Hora: ${new Date().toLocaleString('es-ES')}`;
+      document.getElementById('modal-share').classList.remove('hidden');
+    }
+
+    function closeShareModal() {
+      document.getElementById('modal-share').classList.add('hidden');
+    }
+
+    function shareViaWhatsApp() {
+      const coords = `${latestLat.toFixed(6)},${latestLon.toFixed(6)}`;
+      const mapsUrl = `https://maps.google.com/?q=${coords}`;
+      const msg = `🚨 *GRUPO EULEN COLOMBIA - UBICACIÓN HSEQ EN TIEMPO REAL*\nSupervisor: ${currentInspectorName}\nCoordenadas: ${coords}\nPrecisión: +/- ${latestAccuracy}m\nVer en Google Maps: ${mapsUrl}`;
+      const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+      window.open(whatsappUrl, '_blank');
+    }
+
+    function copyMapsLink() {
+      const coords = `${latestLat.toFixed(6)},${latestLon.toFixed(6)}`;
+      const mapsUrl = `https://maps.google.com/?q=${coords}`;
+      navigator.clipboard.writeText(mapsUrl);
+      showToast("Enlace de Google Maps copiado", "success");
+    }
+
+    /* CHATBOT & BITÁCORA WIZARD */
+    function startChatbotWizard() {
+      chatStep = 0;
+      chatAnswers = { startTime: '', endTime: '', clientCount: '', keyIncidents: '', trainingNotes: '', generalSummary: '' };
+      const chatContainer = document.getElementById('chat-messages');
+      chatContainer.innerHTML = '';
+      
+      appendBotMessage(chatQuestions[0].prompt);
+      document.getElementById('report-status-badge').innerText = 'En borrador';
+      document.getElementById('report-status-badge').className = 'text-[10px] font-black px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-400';
+      document.getElementById('output-generated-report').value = '';
+    }
+
+    function appendBotMessage(text) {
+      const container = document.getElementById('chat-messages');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'flex gap-2.5 items-start text-xs leading-relaxed max-w-[88%]';
+      msgDiv.innerHTML = `
+        <div class="w-7 h-7 rounded-lg bg-purple-600 text-white flex-shrink-0 flex items-center justify-center font-bold text-[10px] shadow-sm">
+          <i class="fa-solid fa-robot"></i>
+        </div>
+        <div class="bg-white text-brand-navy p-3.5 rounded-2xl rounded-tl-none border border-brand-navy/15 shadow-sm font-semibold">
+          ${text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
+        </div>
+      `;
+      container.appendChild(msgDiv);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function appendUserMessage(text) {
+      const container = document.getElementById('chat-messages');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'flex gap-2.5 items-start justify-end text-xs leading-relaxed ml-auto max-w-[88%]';
+      msgDiv.innerHTML = `
+        <div class="bg-brand-navy text-white p-3.5 rounded-2xl rounded-tr-none shadow-sm font-semibold">
+          ${text}
+        </div>
+        <div class="w-7 h-7 rounded-lg bg-brand-blue text-white flex-shrink-0 flex items-center justify-center font-bold text-[10px]">
+          <i class="fa-solid fa-user"></i>
+        </div>
+      `;
+      container.appendChild(msgDiv);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function sendChatMessage() {
+      const input = document.getElementById('chat-user-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendUserMessage(text);
+      input.value = '';
+
+      if (chatStep < chatQuestions.length) {
+        const currentKey = chatQuestions[chatStep].key;
+        chatAnswers[currentKey] = text;
+        chatStep++;
+
+        setTimeout(() => {
+          if (chatStep < chatQuestions.length) {
+            appendBotMessage(chatQuestions[chatStep].prompt);
+          } else {
+            appendBotMessage("✅ **¡Excelente! Consolidando informe con fotografías y recorrido satelital de Grupo Eulen Colombia...**");
+            generateConsolidatedReport();
+          }
+        }, 500);
+      }
+    }
+
+    function autoFillWithLoggedData() {
+      const totalPoints = gpsLogHistory.length;
+      const client = (document.getElementById('input-client') ? document.getElementById('input-client').value : '').trim() || 'Grupo Eulen Colombia';
+      const proj = (document.getElementById('input-project') ? document.getElementById('input-project').value : '').trim() || 'Operación General';
+      const weather = document.getElementById('input-weather') ? document.getElementById('input-weather').value : 'No especificado';
+      showToast(`Sincronizado: ${client} | ${proj} | ${weather} | ${totalPoints} pts GPS`, "info");
+      if (document.getElementById('output-generated-report').value) {
+        generateConsolidatedReport();
+      }
+    }
+
+    function generateConsolidatedReport() {
+      const now = new Date();
+      const today = now.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      const generatedTime = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+
+      const clientName = (document.getElementById('input-client') ? document.getElementById('input-client').value : '').trim() || 'Grupo Eulen Colombia - Operaciones';
+      const projectName = (document.getElementById('input-project') ? document.getElementById('input-project').value : '').trim() || 'Sede Principal / Centro Logístico';
+      const weatherCondition = document.getElementById('input-weather') ? document.getElementById('input-weather').value : '☀️ Soleado | 24°C';
+
+      const totalGPSPoints = gpsLogHistory.length;
+      const lastGPS = gpsLogHistory[0] ? gpsLogHistory[0].dd : document.getElementById('input-coords').value;
+
+      const reportText = 
+`==================================================
+      GRUPO EULEN COLOMBIA - HSEQ FIELD PRO
+   INFORME Y BITÁCORA DIARIA DE CAMPO Y SUPERVISIÓN
+==================================================
+• EMPRESA / CLIENTE:      ${clientName.toUpperCase()}
+• PROYECTO / FRENTE:      ${projectName.toUpperCase()}
+• SUPERVISOR / INSPECTOR: ${currentInspectorName.toUpperCase()}
+• FECHA DE OPERACIÓN:     ${today.toUpperCase()}
+• HORA DE GENERACIÓN:     ${generatedTime}
+• CLIMA REGISTRADO:       ${weatherCondition}
+==================================================
+
+1. DATOS GENERALES DE LA JORNADA:
+   • Hora de Inicio: ${chatAnswers.startTime || '06:30 AM'}
+   • Hora de Cierre: ${chatAnswers.endTime || '05:00 PM'}
+   • Sedes / Frentes Inspeccionados: ${chatAnswers.clientCount || '1'}
+   • Condición Climática: ${weatherCondition}
+
+2. GESTIÓN DE HALLAZGOS Y SEGURIDAD EN SITIO:
+   ${chatAnswers.keyIncidents || 'Personal con dotación y EPP completos. Sin novedades críticas que afecten la continuidad operativa.'}
+
+3. CAPACITACIÓN Y FORMACIÓN OPERACIONAL:
+   ${chatAnswers.trainingNotes || 'Charla de 5 minutos sobre autocuidado, reporte oportuno y trabajo seguro.'}
+
+4. RASTREO SATELITAL Y PUNTOS DE CONTROL GPS:
+   • Total de Registros Monitoreados: ${totalGPSPoints} puntos satelitales
+   • Última Ubicación Verificada: ${lastGPS}
+
+5. CONCLUSIONES PARA LA COORDINACIÓN HSEQ:
+   ${chatAnswers.generalSummary || 'Supervisión efectuada conforme a los estándares de calidad y seguridad de Grupo Eulen Colombia.'}
+
+==================================================
+ESTADO: AUDITADO Y CONSOLIDADO DIGITALMENTE
+GENERADO EL: ${today} A LAS ${generatedTime}
+==================================================`;
+
+      document.getElementById('output-generated-report').value = reportText;
+      document.getElementById('report-status-badge').innerText = '✅ Consolidado Eulen';
+      document.getElementById('report-status-badge').className = 'text-[10px] font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-500';
+      
+      showToast("¡Informe diario actualizado con proyecto, cliente y clima!", "success");
+    }
+
+    function copyGeneratedReport() {
+      const textarea = document.getElementById('output-generated-report');
+      if (!textarea.value) {
+        showToast("Primero responde las preguntas del asistente", "warning");
+        return;
+      }
+      textarea.select();
+      document.execCommand('copy');
+      showToast("Informe copiado al portapapeles", "success");
+    }
+
+    function exportFullDayToExcel() {
+      const now = new Date();
+      const generatedTime = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+      const dateIso = now.toISOString().slice(0, 10);
+
+      const clientName = (document.getElementById('input-client') ? document.getElementById('input-client').value : '').trim() || 'Grupo Eulen Colombia';
+      const projectName = (document.getElementById('input-project') ? document.getElementById('input-project').value : '').trim() || 'Operación General';
+      const weatherCondition = document.getElementById('input-weather') ? document.getElementById('input-weather').value : 'No especificado';
+      const reportText = document.getElementById('output-generated-report').value;
+
+      const workbook = XLSX.utils.book_new();
+
+      const summaryTable = [
+        { "PARÁMETRO": "Empresa / Cliente", "DETALLE": clientName },
+        { "PARÁMETRO": "Proyecto / Frente de Trabajo", "DETALLE": projectName },
+        { "PARÁMETRO": "Supervisor / Inspector HSEQ", "DETALLE": currentInspectorName },
+        { "PARÁMETRO": "Fecha de Jornada", "DETALLE": dateIso },
+        { "PARÁMETRO": "Hora Exacta de Generación", "DETALLE": generatedTime },
+        { "PARÁMETRO": "Clima Registrado en Sitio", "DETALLE": weatherCondition },
+        { "PARÁMETRO": "Hora de Inicio Jornada", "DETALLE": chatAnswers.startTime || '06:30 AM' },
+        { "PARÁMETRO": "Hora de Cierre Jornada", "DETALLE": chatAnswers.endTime || '05:00 PM' },
+        { "PARÁMETRO": "Sedes / Puestos Supervisados", "DETALLE": chatAnswers.clientCount || '1' },
+        { "PARÁMETRO": "Hallazgos y Novedades", "DETALLE": chatAnswers.keyIncidents || 'Sin novedades críticas' },
+        { "PARÁMETRO": "Capacitación / Charla 5 Minutos", "DETALLE": chatAnswers.trainingNotes || 'No aplica' },
+        { "PARÁMETRO": "Conclusiones para Operaciones", "DETALLE": chatAnswers.generalSummary || 'Supervisión efectuada satisfactoriamente' },
+        { "PARÁMETRO": "INFORME COMPLETO CONSOLIDADO", "DETALLE": reportText }
+      ];
+
+      const sheet1 = XLSX.utils.json_to_sheet(summaryTable);
+      XLSX.utils.book_append_sheet(workbook, sheet1, "Resumen Ejecutivo Eulen");
+
+      if (gpsLogHistory.length > 0) {
+        const gpsData = gpsLogHistory.map(item => ({
+          "N°": item.index,
+          "Hora": item.time,
+          "Coordenadas DD": item.dd,
+          "Formato DMS": item.dms,
+          "Precisión": item.accuracy,
+          "Cliente / Sede": clientName,
+          "Proyecto / Frente": projectName,
+          "Clima": weatherCondition
+        }));
+        const sheet2 = XLSX.utils.json_to_sheet(gpsData);
+        XLSX.utils.book_append_sheet(workbook, sheet2, "Ruta GPS Eulen");
+      }
+
+      const cleanClient = clientName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const filename = `Informe_HSEQ_Eulen_${cleanClient}_${dateIso}.xlsx`;
+      XLSX.writeFile(workbook, filename);
+      showToast("Excel detallado de Eulen exportado", "success");
+    }
+
+    function selectCategory(catName) {
+      currentCategory = catName;
+      const buttons = document.querySelectorAll('.cat-btn');
+      
+      buttons.forEach(btn => {
+        const cat = btn.getAttribute('data-cat');
+        if (cat === catName) {
+          btn.classList.add('border-3', 'shadow-md');
+        } else {
+          btn.classList.remove('border-3', 'shadow-md');
+        }
+      });
+
+      updateCanvas();
+    }
+
+    function handleOverlayStyleChange() {
+      updateCanvas();
+    }
+
+    /* CAMERA HARDWARE CONTROLS WITH GRACEFUL PERMISSION RECOVERY */
+    async function startLiveCamera() {
+      stopCameraStream();
+
+      const video = document.getElementById('webcam-video');
+      const placeholder = document.getElementById('camera-placeholder');
+      const controlsBar = document.getElementById('camera-controls-bar');
+
+      try {
+        const constraints = {
+          video: {
+            facingMode: { ideal: facingMode },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          },
+          audio: false
+        };
+
+        mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+        video.srcObject = mediaStream;
+        
+        video.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+        controlsBar.classList.remove('hidden');
+
+        updateCameraDiagBadge('granted');
+        showToast("Cámara de campo activada", "success");
+      } catch (err) {
+        console.warn("Camera access error:", err);
+        updateCameraDiagBadge('denied');
+        showToast("No se pudo abrir la cámara. Verifica permisos o usa 'Subir Galería'", "warning");
+        openPermissionsModal();
+      }
+    }
+
+    function stopCameraStream() {
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+      }
+      const video = document.getElementById('webcam-video');
+      const placeholder = document.getElementById('camera-placeholder');
+      const controlsBar = document.getElementById('camera-controls-bar');
+
+      video.classList.add('hidden');
+      placeholder.classList.remove('hidden');
+      controlsBar.classList.add('hidden');
+    }
+
+    async function switchCameraFacing() {
+      facingMode = (facingMode === 'environment') ? 'user' : 'environment';
+      await startLiveCamera();
+    }
+
+    async function toggleTorch() {
+      if (!mediaStream) return;
+      const track = mediaStream.getVideoTracks()[0];
+      const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+
+      if (capabilities.torch) {
+        torchEnabled = !torchEnabled;
+        try {
+          await track.applyConstraints({ advanced: [{ torch: torchEnabled }] });
+          showToast(torchEnabled ? "Flash Activado" : "Flash Apagado", "info");
+        } catch (e) {
+          showToast("Error al activar linterna", "warning");
+        }
+      } else {
+        showToast("Linterna no disponible en este lente", "warning");
+      }
+    }
+
+    function captureLiveSnapshot() {
+      const video = document.getElementById('webcam-video');
+      if (!video || video.videoWidth === 0) return;
+
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = video.videoWidth;
+      tempCanvas.height = video.videoHeight;
+      const ctx = tempCanvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+
+      inspectionImageSrc = tempCanvas.toDataURL('image/png');
+      const img = document.getElementById('img-inspection-source');
+      img.onload = () => updateCanvas();
+      img.src = inspectionImageSrc;
+
+      stopCameraStream();
+      showToast("Foto de inspección capturada con éxito", "success");
+    }
+
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      stopCameraStream();
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        inspectionImageSrc = e.target.result;
+        const img = document.getElementById('img-inspection-source');
+        img.onload = () => updateCanvas();
+        img.src = inspectionImageSrc;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function toDMS(deg, isLat) {
+      const absolute = Math.abs(deg);
+      const degrees = Math.floor(absolute);
+      const minutesNotTruncated = (absolute - degrees) * 60;
+      const minutes = Math.floor(minutesNotTruncated);
+      const seconds = Math.floor((minutesNotTruncated - minutes) * 60);
+
+      let direction = isLat ? (deg >= 0 ? "N" : "S") : (deg >= 0 ? "E" : "W");
+      return `${degrees}°${minutes}'${seconds}"${direction}`;
+    }
+
+    function updateGPSLogUI() {
+      document.getElementById('gps-count-label').innerText = gpsLogHistory.length;
+      document.getElementById('gps-last-time').innerText = gpsLogHistory[0] ? gpsLogHistory[0].time : '--:--:--';
+      document.getElementById('gps-last-coords').innerText = gpsLogHistory[0] ? gpsLogHistory[0].dd : 'Detectando...';
+
+      const tbody = document.getElementById('gps-log-tbody');
+      tbody.innerHTML = '';
+
+      if (gpsLogHistory.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-brand-navy font-sans font-bold">Sin puntos GPS registrados.</td></tr>`;
+        return;
+      }
+
+      gpsLogHistory.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-brand-cream/60 transition";
+        tr.innerHTML = `
+          <td class="p-3 font-bold text-brand-blue">${item.index}</td>
+          <td class="p-3 text-brand-navy font-bold">${item.time}</td>
+          <td class="p-3 text-brand-navy font-black">${item.dd}</td>
+          <td class="p-3 text-emerald-700 font-bold">${item.dms}</td>
+          <td class="p-3 text-slate-600 font-bold">${item.accuracy}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function clearGPSLog() {
+      gpsLogHistory = [];
+      updateGPSLogUI();
+      showToast("Historial GPS limpiado", "info");
+    }
+
+    function generateDefaultPlaceholderImage() {
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = 1200;
+      tempCanvas.height = 900;
+      const ctx = tempCanvas.getContext('2d');
+
+      const bgGrad = ctx.createLinearGradient(0, 0, 1200, 900);
+      bgGrad.addColorStop(0, '#002664');
+      bgGrad.addColorStop(1, '#011538');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, 1200, 900);
+
+      ctx.font = '900 36px Montserrat';
+      ctx.fillStyle = '#00a9e0';
+      ctx.textAlign = 'center';
+      ctx.fillText("📷 CAPTURA FOTO DE INSPECCIÓN - GRUPO EULEN", 600, 410);
+
+      ctx.font = '600 20px Montserrat';
+      ctx.fillStyle = '#e8e6df';
+      ctx.fillText("Presiona 'Abrir Cámara' o 'Subir Galería' para iniciar", 600, 460);
+
+      inspectionImageSrc = tempCanvas.toDataURL('image/png');
+      const img = document.getElementById('img-inspection-source');
+      img.onload = () => updateCanvas();
+      img.src = inspectionImageSrc;
+    }
+
+    /* SUBTLE & PROPORTIONAL CANVAS STAMP OVERLAY RENDERER WITH EULEN LOGO */
+    function updateCanvas() {
+      const canvas = document.getElementById('hseq-canvas');
+      const ctx = canvas.getContext('2d');
+      const sourceImg = document.getElementById('img-inspection-source');
+
+      if (!sourceImg || !sourceImg.complete || sourceImg.naturalWidth === 0) return;
+
+      const renderWidth = 1200;
+      const renderHeight = (sourceImg.naturalHeight / sourceImg.naturalWidth) * renderWidth || 900;
+
+      canvas.width = renderWidth;
+      canvas.height = renderHeight;
+
+      // Draw Base Photo
+      ctx.drawImage(sourceImg, 0, 0, renderWidth, renderHeight);
+
+      // Dynamic Form Data
+      const client = document.getElementById('input-client').value || 'Grupo Eulen Colombia';
+      const project = document.getElementById('input-project').value || 'Operación General';
+      const activity = document.getElementById('input-activity').value;
+      const weather = document.getElementById('input-weather').value;
+      const coords = document.getElementById('input-coords').value;
+      const city = document.getElementById('input-city').value;
+      const description = document.getElementById('input-description').value;
+      
+      const opacityInput = document.getElementById('input-overlay-opacity');
+      const overlayOpacity = opacityInput ? parseFloat(opacityInput.value) : 0.82;
+      
+      const styleRadio = document.querySelector('input[name="overlay-style"]:checked');
+      const style = styleRadio ? styleRadio.value : 'dark';
+
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const timeStr = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+      const catTheme = categoryConfig[currentCategory] || categoryConfig['Seguimiento Diario'];
+
+      // COMPACT BANNER DIMENSIONS (Max 28% of canvas height)
+      const overlayMargin = 16;
+      const overlayHeight = Math.min(renderHeight * 0.28, 250);
+      const overlayY = renderHeight - overlayHeight - overlayMargin;
+      const overlayWidth = renderWidth - (overlayMargin * 2);
+      const borderRadius = 16;
+
+      ctx.save();
+
+      // Translucent Backdrop Fill (Glassmorphism)
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+      ctx.shadowBlur = 12;
+
+      if (style === 'dark') {
+        ctx.fillStyle = `rgba(0, 38, 100, ${overlayOpacity})`; /* Translucent #002664 Navy */
+        ctx.strokeStyle = 'rgba(0, 169, 224, 0.5)';           /* Translucent #00a9e0 Cyan Border */
+      } else {
+        ctx.fillStyle = `rgba(240, 239, 235, ${overlayOpacity})`; /* Translucent Warm White */
+        ctx.strokeStyle = 'rgba(0, 38, 100, 0.35)';
+      }
+
+      ctx.lineWidth = 2;
+      roundRect(ctx, overlayMargin, overlayY, overlayWidth, overlayHeight, borderRadius, true, true);
+      ctx.shadowBlur = 0;
+
+      // Top Category Accent Line
+      ctx.fillStyle = catTheme.color;
+      roundRect(ctx, overlayMargin, overlayY, overlayWidth, 5, { tl: borderRadius, tr: borderRadius, bl: 0, br: 0 }, true, false);
+
+      const textColorPrimary = style === 'dark' ? '#FFFFFF' : '#002664';
+      const textColorSecondary = style === 'dark' ? '#00a9e0' : '#002664';
+      const textColorMuted = style === 'dark' ? '#e8e6df' : '#334155';
+
+      // AUTOMATIC GRUPO EULEN LOGO RENDERING (PROPORTIONAL RATIO)
+      const eulenLogo = style === 'dark' 
+        ? document.getElementById('img-logo-dark') 
+        : document.getElementById('img-logo-light');
+
+      let headerTextX = overlayMargin + 18;
+
+      if (eulenLogo && eulenLogo.complete && eulenLogo.naturalWidth > 0) {
+        const logoTargetHeight = 44;
+        const logoAspect = eulenLogo.naturalWidth / eulenLogo.naturalHeight;
+        const logoTargetWidth = logoTargetHeight * logoAspect;
+        const logoY = overlayY + 12;
+
+        ctx.drawImage(eulenLogo, overlayMargin + 16, logoY, logoTargetWidth, logoTargetHeight);
+        headerTextX = overlayMargin + 16 + logoTargetWidth + 16;
+      }
+
+      // Client & Project Header
+      ctx.font = '800 19px Montserrat';
+      ctx.fillStyle = textColorPrimary;
+      ctx.textAlign = 'left';
+      ctx.fillText(client.toUpperCase(), headerTextX, overlayY + 30);
+
+      ctx.font = '700 13px Montserrat';
+      ctx.fillStyle = textColorMuted;
+      ctx.fillText(`Proyecto: ${project} | Supervisor: ${currentInspectorName}`, headerTextX, overlayY + 49);
+
+      // CATEGORY BADGE (Compact Top Right)
+      const badgeText = currentCategory.toUpperCase();
+      ctx.font = '800 12px Montserrat';
+      const badgeWidth = ctx.measureText(badgeText).width + 22;
+      const badgeX = overlayMargin + overlayWidth - badgeWidth - 16;
+      const badgeY = overlayY + 14;
+
+      ctx.fillStyle = catTheme.color;
+      roundRect(ctx, badgeX, badgeY, badgeWidth, 26, 6, true, false);
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'center';
+      ctx.fillText(badgeText, badgeX + (badgeWidth / 2), badgeY + 17);
+
+      // Subtle Divider Line
+      ctx.strokeStyle = style === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 38, 100, 0.15)';
+      ctx.beginPath();
+      ctx.moveTo(overlayMargin + 16, overlayY + 63);
+      ctx.lineTo(overlayMargin + overlayWidth - 16, overlayY + 63);
+      ctx.stroke();
+
+      // TWO COLUMN STREAMLINED CONTENT LAYOUT
+      const contentY = overlayY + 83;
+      const leftColX = overlayMargin + 18;
+      const rightColX = overlayMargin + (overlayWidth * 0.53);
+
+      // Left Column: Activity & Field Observation
+      ctx.font = '800 12px Montserrat';
+      ctx.fillStyle = textColorSecondary;
+      ctx.textAlign = 'left';
+      ctx.fillText("SERVICIO / ACTIVIDAD:", leftColX, contentY);
+
+      ctx.font = '700 13px Montserrat';
+      ctx.fillStyle = textColorPrimary;
+      ctx.fillText(activity, leftColX + 155, contentY);
+
+      ctx.font = '800 12px Montserrat';
+      ctx.fillStyle = textColorSecondary;
+      ctx.fillText("HALLAZGO HSEQ:", leftColX, contentY + 24);
+
+      ctx.font = '600 13px Montserrat';
+      ctx.fillStyle = textColorMuted;
+      wrapText(ctx, description, leftColX, contentY + 43, (overlayWidth * 0.49), 17);
+
+      // Right Column: Date, Coords & Weather
+      ctx.font = '800 12px Montserrat';
+      ctx.fillStyle = textColorSecondary;
+      ctx.fillText("FECHA / HORA:", rightColX, contentY);
+
+      ctx.font = '700 13px Montserrat';
+      ctx.fillStyle = textColorPrimary;
+      ctx.fillText(`${dateStr} ${timeStr}`, rightColX + 102, contentY);
+
+      ctx.font = '800 12px Montserrat';
+      ctx.fillStyle = textColorSecondary;
+      ctx.fillText("UBICACIÓN GPS:", rightColX, contentY + 24);
+
+      ctx.font = '700 12px Montserrat';
+      ctx.fillStyle = textColorPrimary;
+      ctx.fillText(`${coords} (${city})`, rightColX + 108, contentY + 24);
+
+      ctx.font = '800 12px Montserrat';
+      ctx.fillStyle = textColorSecondary;
+      ctx.fillText("CLIMA:", rightColX, contentY + 48);
+
+      ctx.font = '700 12px Montserrat';
+      ctx.fillStyle = textColorPrimary;
+      ctx.fillText(weather, rightColX + 54, contentY + 48);
+
+      // Watermark Verification Tag
+      ctx.font = '700 10px Montserrat';
+      ctx.fillStyle = style === 'dark' ? 'rgba(232, 230, 223, 0.65)' : 'rgba(0, 38, 100, 0.65)';
+      ctx.textAlign = 'right';
+      ctx.fillText("SISTEMA HSEQ FIELD PRO - GRUPO EULEN COLOMBIA - REGISTRO AUDITADO", overlayMargin + overlayWidth - 16, overlayY + overlayHeight - 10);
+
+      ctx.restore();
+    }
+
+    function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+      if (typeof radius === 'number') {
+        radius = {tl: radius, tr: radius, br: radius, bl: radius};
+      }
+      ctx.beginPath();
+      ctx.moveTo(x + radius.tl, y);
+      ctx.lineTo(x + width - radius.tr, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+      ctx.lineTo(x + width, y + height - radius.br);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+      ctx.lineTo(x + radius.bl, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+      ctx.lineTo(x, y + radius.tl);
+      ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+      ctx.closePath();
+      if (fill) ctx.fill();
+      if (stroke) ctx.stroke();
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      let currentY = y;
+
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        const testWidth = metrics.width;
+
+        if (testWidth > maxWidth && n > 0) {
+          ctx.fillText(line, x, currentY);
+          line = words[n] + ' ';
+          currentY += lineHeight;
+          if (currentY > y + (lineHeight * 2)) {
+            ctx.fillText(line + '...', x, currentY);
+            return;
+          }
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line, x, currentY);
+    }
+
+    function downloadStampImage() {
+      const canvas = document.getElementById('hseq-canvas');
+      const client = document.getElementById('input-client').value.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'eulen';
+      const timestamp = new Date().toISOString().slice(0, 10);
+      const filename = `EULEN_HSEQ_${currentCategory.replace(/\s+/g, '')}_${client}_${timestamp}.png`;
+
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = canvas.toDataURL('image/png', 1.0);
+      link.click();
+
+      showToast("Foto con sello Grupo Eulen descargada", "success");
+    }
+
+    function exportGPSToExcel() {
+      if (gpsLogHistory.length === 0) {
+        showToast("No hay registros GPS para exportar", "warning");
+        return;
+      }
+
+      const excelData = gpsLogHistory.map(item => ({
+        "N°": item.index,
+        "Hora Exacta": item.time,
+        "Latitud": item.lat,
+        "Longitud": item.lon,
+        "Coordenadas DD": item.dd,
+        "Coordenadas DMS (GMS)": item.dms,
+        "Precisión Estimada": item.accuracy,
+        "Timestamp ISO": item.timestamp
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Ruta GPS Grupo Eulen");
+
+      const filename = `Ruta_GPS_Eulen_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      XLSX.writeFile(workbook, filename);
+
+      showToast("Excel de ruta GPS generado", "success");
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-message');
+      const toastIcon = document.getElementById('toast-icon');
+
+      toastMsg.innerText = message;
+
+      if (type === 'success') {
+        toastIcon.className = 'fa-solid fa-circle-check text-emerald-400 text-lg';
+      } else if (type === 'warning') {
+        toastIcon.className = 'fa-solid fa-triangle-exclamation text-amber-400 text-lg';
+      } else {
+        toastIcon.className = 'fa-solid fa-circle-info text-brand-blue text-lg';
+      }
+
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3500);
+    }
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('PWA Service Worker registrado con éxito:', reg.scope))
+          .catch(err => console.log('PWA Service Worker registro omitido:', err));
+      });
+    }
+  </script>
+</body>
+</html>
