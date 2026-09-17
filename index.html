@@ -136,13 +136,13 @@
       <div class="flex flex-wrap items-center gap-2 sm:gap-3">
         
         <!-- GPS Status Pill -->
-        <div id="header-gps-pill" onclick="openShareModal()" title="GPS Activo - Clic para compartir ubicación" class="cursor-pointer px-3 py-1.5 rounded-xl bg-white/10 border border-brand-blue/40 flex items-center gap-2 hover:bg-white/20 transition shadow-sm">
-          <span id="gps-status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 gps-active-indicator"></span>
+        <div id="header-gps-pill" onclick="handleHeaderGPSClick()" title="Estado GPS Eulen - Clic para ver detalles" class="cursor-pointer px-3 py-1.5 rounded-xl bg-red-900/60 border border-red-500/80 flex items-center gap-2 hover:bg-red-800/60 transition shadow-sm animate-pulse">
+          <span id="gps-status-dot" class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
           <div class="hidden sm:flex flex-col text-left">
-            <span class="text-[10px] font-black text-brand-blue leading-none">GPS EULEN</span>
-            <span id="header-gps-coords" class="text-[10px] font-mono text-white font-bold leading-tight mt-0.5">Obteniendo alta precisión...</span>
+            <span class="text-[10px] font-black text-amber-300 leading-none">GPS EULEN</span>
+            <span id="header-gps-coords" class="text-[10px] font-mono text-white font-bold leading-tight mt-0.5">⚠️ Buscando satélites...</span>
           </div>
-          <i class="fa-solid fa-share-nodes text-xs text-brand-blue ml-0.5"></i>
+          <i class="fa-solid fa-location-dot text-xs text-amber-300 ml-0.5"></i>
         </div>
 
         <!-- Diagnostics Button -->
@@ -167,10 +167,47 @@
     </div>
   </header>
 
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
+
+    <!-- DYNAMIC GPS TRACEABILITY ALERT BANNER (Prominent warning when GPS is not locked) -->
+    <div id="gps-traceability-banner" class="bg-gradient-to-r from-red-600 via-red-700 to-brand-red text-white p-4 md:p-5 rounded-2xl shadow-xl border-2 border-red-300/40 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all duration-300">
+      <div class="flex items-start gap-3.5">
+        <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl text-amber-300 flex-shrink-0 animate-bounce shadow-md">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 class="text-xs md:text-sm font-black tracking-wide uppercase">⚠️ ALERTA DE TRAZABILIDAD HSEQ: Ubicación GPS No Detectada</h3>
+            <span class="text-[9px] bg-white text-red-700 font-extrabold px-2 py-0.5 rounded-full uppercase">Obligatorio</span>
+          </div>
+          <p class="text-[11px] md:text-xs text-red-100 font-medium mt-1 leading-relaxed">
+            Para certificar la <strong>validez legal y trazabilidad auditada</strong> ante Grupo Eulen Colombia y clientes, es indispensable activar el GPS en tu móvil. El sistema está buscando satélites automáticamente en segundo plano.
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 w-full md:w-auto justify-end flex-shrink-0">
+        <button type="button" onclick="forceGPSRefresh()" class="flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-white text-brand-navy hover:bg-brand-cream font-black text-xs shadow-md transition flex items-center justify-center gap-1.5 active:scale-95">
+          <i class="fa-solid fa-location-crosshairs text-brand-blue"></i> Activar / Reintentar GPS
+        </button>
+        <button type="button" onclick="openPermissionsModal()" class="px-3 py-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs transition flex items-center justify-center gap-1">
+          <i class="fa-solid fa-circle-question"></i> ¿Cómo Activar?
+        </button>
+      </div>
+    </div>
+
+    <!-- DYNAMIC GPS VERIFIED CONFIRMATION BANNER (Appears automatically when GPS lock is confirmed) -->
+    <div id="gps-verified-banner" class="hidden bg-gradient-to-r from-emerald-600 via-teal-700 to-emerald-800 text-white px-4 py-2.5 rounded-2xl shadow-md border border-emerald-400/40 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5 text-xs font-bold">
+        <i class="fa-solid fa-circle-check text-base text-emerald-200"></i>
+        <span><strong>Trazabilidad HSEQ Verificada:</strong> Señal satelital activa en tiempo real (<span id="gps-verified-acc">+/- 4m</span>). Registros georreferenciados auditables.</span>
+      </div>
+      <button type="button" onclick="openShareModal()" class="text-[11px] text-white underline font-black hover:text-emerald-200 flex items-center gap-1">
+        <i class="fa-solid fa-share-nodes"></i> Compartir Coordenadas
+      </button>
+    </div>
 
     <!-- VIEW 1: EDITOR & LIVE CAMERA -->
-    <div id="view-editor" class="lg:col-span-12 grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
+    <div id="view-editor" class="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
 
       <!-- LEFT FORM CONTROLS (5 Cols) -->
       <section class="lg:col-span-5 flex flex-col gap-5">
@@ -210,30 +247,33 @@
             </span>
           </div>
 
-          <!-- Live Camera Stream UI -->
-          <div id="camera-stream-container" class="relative rounded-2xl overflow-hidden bg-brand-navy border border-brand-navy/20 aspect-[4/3] flex flex-col items-center justify-center shadow-inner">
+          <!-- Live Camera Stream UI (Mobile Smartphone Aspect Ratio 9:16) -->
+          <div id="camera-stream-container" class="relative rounded-3xl overflow-hidden bg-brand-navy border-4 border-brand-navy/30 aspect-[9/16] w-full max-w-[340px] mx-auto flex flex-col items-center justify-center shadow-2xl">
             <video id="webcam-video" autoplay playsinline class="w-full h-full object-cover hidden"></video>
             
-            <div id="camera-placeholder" class="p-6 text-center flex flex-col items-center justify-center text-white space-y-2">
-              <div class="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20 mb-1">
-                <i class="fa-solid fa-camera text-2xl text-brand-blue"></i>
+            <div id="camera-placeholder" class="p-6 text-center flex flex-col items-center justify-center text-white space-y-3">
+              <div class="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20 mb-1 shadow-md">
+                <i class="fa-solid fa-mobile-screen text-3xl text-brand-blue"></i>
               </div>
-              <p class="text-xs font-black text-white">Cámara Lista para Inspección</p>
-              <p class="text-[11px] text-brand-cream/80 max-w-xs leading-relaxed">Presiona "Abrir Cámara" para capturar en vivo con el lente de tu smartphone o sube una imagen de la galería.</p>
+              <div>
+                <p class="text-sm font-black text-white">Cámara Móvil Smartphone</p>
+                <span class="text-[10px] text-brand-blue font-extrabold px-2 py-0.5 rounded bg-white/10 border border-brand-blue/30">Formato 9:16 Pantalla Celular</span>
+              </div>
+              <p class="text-[11px] text-brand-cream/80 max-w-xs leading-relaxed">Presiona "Abrir Cámara" para activar el lente de tu smartphone o sube una imagen de la galería.</p>
             </div>
 
             <!-- Live Camera Controls Toolbar Overlay -->
-            <div id="camera-controls-bar" class="absolute bottom-3 left-3 right-3 hidden flex items-center justify-between gap-2.5 bg-brand-navy/90 backdrop-blur-md p-2.5 rounded-xl border border-white/20 shadow-lg z-10">
-              <button type="button" onclick="switchCameraFacing()" title="Voltear Cámara Trasera/Frontal" class="p-2.5 rounded-lg bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition flex items-center justify-center w-10 h-10">
+            <div id="camera-controls-bar" class="absolute bottom-4 left-3 right-3 hidden flex items-center justify-between gap-2 bg-brand-navy/95 backdrop-blur-md p-2.5 rounded-2xl border border-white/20 shadow-2xl z-10">
+              <button type="button" onclick="switchCameraFacing()" title="Voltear Cámara Trasera/Frontal" class="p-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition flex items-center justify-center w-10 h-10">
                 <i class="fa-solid fa-camera-rotate text-sm text-brand-blue"></i>
               </button>
-              <button type="button" onclick="toggleTorch()" id="btn-torch" title="Linterna / Flash" class="p-2.5 rounded-lg bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition flex items-center justify-center w-10 h-10">
+              <button type="button" onclick="toggleTorch()" id="btn-torch" title="Linterna / Flash" class="p-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition flex items-center justify-center w-10 h-10">
                 <i class="fa-solid fa-bolt text-sm text-amber-300"></i>
               </button>
-              <button type="button" onclick="captureLiveSnapshot()" class="flex-1 py-2.5 px-3 rounded-lg bg-brand-red text-white font-black text-xs shadow-md transition flex items-center justify-center gap-2 hover:bg-red-600">
-                <i class="fa-solid fa-circle-dot text-base"></i> CAPTURAR FOTO
+              <button type="button" onclick="captureLiveSnapshot()" class="flex-1 py-3 px-3 rounded-xl bg-brand-red text-white font-black text-xs shadow-lg transition flex items-center justify-center gap-2 hover:bg-red-600 active:scale-95">
+                <i class="fa-solid fa-circle-dot text-base animate-pulse"></i> CAPTURAR
               </button>
-              <button type="button" onclick="stopCameraStream()" title="Cerrar Cámara" class="p-2.5 rounded-lg bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition flex items-center justify-center w-10 h-10">
+              <button type="button" onclick="stopCameraStream()" title="Cerrar Cámara" class="p-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition flex items-center justify-center w-10 h-10">
                 <i class="fa-solid fa-xmark text-sm text-red-400"></i>
               </button>
             </div>
@@ -275,12 +315,12 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
-              <label class="text-xs text-brand-navy font-bold mb-1.5 block">Cliente / Sede de Servicio *</label>
-              <input type="text" id="input-client" value="Grupo Eulen Colombia - Operaciones" class="w-full text-xs font-bold px-3.5 py-2.5 rounded-xl glass-input" oninput="updateCanvas()">
+              <label class="text-xs text-brand-navy font-bold mb-1.5 block">Delegación *</label>
+              <input type="text" id="input-client" value="Delegación Bogotá" class="w-full text-xs font-bold px-3.5 py-2.5 rounded-xl glass-input" placeholder="Ej: Delegación Bogotá" oninput="updateCanvas()">
             </div>
             <div>
-              <label class="text-xs text-brand-navy font-bold mb-1.5 block">Proyecto / Frente de Trabajo *</label>
-              <input type="text" id="input-project" value="Sede Principal / Centro Logístico" class="w-full text-xs font-bold px-3.5 py-2.5 rounded-xl glass-input" oninput="updateCanvas()">
+              <label class="text-xs text-brand-navy font-bold mb-1.5 block">Nombre de Cliente *</label>
+              <input type="text" id="input-project" value="Cliente Operaciones" class="w-full text-xs font-bold px-3.5 py-2.5 rounded-xl glass-input" placeholder="Ej: Nombre de Cliente" oninput="updateCanvas()">
             </div>
           </div>
 
@@ -316,15 +356,15 @@
           <div>
             <div class="flex items-center justify-between mb-1.5">
               <label class="text-xs text-brand-navy font-bold">Ubicación GPS (Alta Precisión Chip Móvil)</label>
-              <button type="button" onclick="getGPSLocationHighAccuracy()" class="text-[11px] text-brand-blue hover:text-brand-navy font-black flex items-center gap-1 transition">
+              <button type="button" onclick="forceGPSRefresh()" class="text-[11px] text-brand-blue hover:text-brand-navy font-black flex items-center gap-1 transition">
                 <i class="fa-solid fa-location-crosshairs"></i> Forzar GPS Exacto
               </button>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-              <input type="text" id="input-coords" value="Obteniendo coordenadas..." class="sm:col-span-2 text-xs font-mono font-bold px-3.5 py-2.5 rounded-xl glass-input" oninput="updateCanvas()">
+              <input type="text" id="input-coords" value="Buscando coordenadas satelitales..." class="sm:col-span-2 text-xs font-mono font-bold px-3.5 py-2.5 rounded-xl glass-input" oninput="updateCanvas()">
               <input type="text" id="input-city" value="Bogotá D.C., Colombia" class="text-xs font-bold px-3.5 py-2.5 rounded-xl glass-input" oninput="updateCanvas()">
             </div>
-            <p id="gps-accuracy-feedback" class="text-[10px] text-brand-blue font-bold mt-1">Margen de precisión estimada: Buscando...</p>
+            <p id="gps-accuracy-feedback" class="text-[10px] text-brand-red font-bold mt-1">Margen de precisión: Buscando señal de satélites GPS...</p>
           </div>
 
           <!-- Field Observation / Situation -->
@@ -373,9 +413,9 @@
           <img id="img-logo-dark" src="assets/logo-eulen-dark.jpg" class="hidden" alt="Eulen Logo Dark">
           <img id="img-logo-light" src="assets/logo-eulen-light.jpg" class="hidden" alt="Eulen Logo Light">
 
-          <!-- Main Render Canvas -->
-          <div class="relative w-full aspect-[4/3] bg-brand-navy rounded-2xl overflow-hidden shadow-lg border border-brand-navy/20 flex items-center justify-center p-1">
-            <canvas id="hseq-canvas" class="w-full h-full object-contain rounded-xl"></canvas>
+          <!-- Main Render Canvas (Mobile Smartphone Aspect Ratio 9:16) -->
+          <div class="relative w-full aspect-[9/16] max-w-[340px] mx-auto bg-brand-navy rounded-3xl overflow-hidden shadow-2xl border-4 border-brand-navy/30 flex items-center justify-center p-1">
+            <canvas id="hseq-canvas" class="w-full h-full object-contain rounded-2xl"></canvas>
           </div>
 
           <!-- Action Download Button -->
@@ -419,13 +459,18 @@
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         <div class="bg-white p-5 rounded-2xl border border-brand-navy/15 shadow-md space-y-4 md:col-span-1">
-          <h3 class="text-xs font-black uppercase tracking-wider text-brand-navy">Estado del Sensor Satelital</h3>
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-black uppercase tracking-wider text-brand-navy">Estado del Sensor Satelital</h3>
+            <button onclick="forceGPSRefresh()" title="Reintentar señal GPS" class="text-xs text-brand-blue hover:text-brand-navy font-black flex items-center gap-1">
+              <i class="fa-solid fa-rotate-right"></i> Refrescar
+            </button>
+          </div>
 
           <div class="p-4 bg-brand-cream rounded-2xl border border-brand-navy/15 space-y-2.5 text-xs font-bold text-brand-navy">
             <div class="flex justify-between items-center">
               <span>Sensor GPS Móvil:</span>
-              <span id="gps-status-label" class="font-black text-emerald-600 flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Activo
+              <span id="gps-status-label" class="font-black text-brand-red flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span> Buscando Satélites...
               </span>
             </div>
             <div class="flex justify-between">
@@ -588,12 +633,12 @@
           <input type="text" id="setup-inspector" value="Supervisor HSEQ Eulen" class="w-full text-xs font-bold px-3.5 py-2.5 rounded-xl glass-input">
         </div>
         <div>
-          <label class="text-xs font-bold text-brand-navy mb-1.5 block">Cliente / Sede de Operación *</label>
-          <input type="text" id="setup-client" value="Grupo Eulen Colombia - Operaciones" class="w-full text-xs font-bold px-3.5 py-2.5 rounded-xl glass-input">
+          <label class="text-xs font-bold text-brand-navy mb-1.5 block">Delegación *</label>
+          <input type="text" id="setup-client" value="Delegación Bogotá" class="w-full text-xs font-bold px-3.5 py-2.5 rounded-xl glass-input" placeholder="Ej: Delegación Bogotá">
         </div>
         <div>
-          <label class="text-xs font-bold text-brand-navy mb-1.5 block">Proyecto / Frente Inicial *</label>
-          <input type="text" id="setup-project" value="Sede Principal / Centro Logístico" class="w-full text-xs font-bold px-3.5 py-2.5 rounded-xl glass-input">
+          <label class="text-xs font-bold text-brand-navy mb-1.5 block">Nombre de Cliente *</label>
+          <input type="text" id="setup-project" value="Cliente Operaciones" class="w-full text-xs font-bold px-3.5 py-2.5 rounded-xl glass-input" placeholder="Ej: Nombre de Cliente">
         </div>
       </div>
 
@@ -714,6 +759,38 @@
     </div>
   </div>
 
+  <!-- MODAL 4: GPS TRACEABILITY WARNING MODAL (ON PHOTO CAPTURE) -->
+  <div id="modal-gps-warning" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-navy/85 backdrop-blur-md hidden">
+    <div class="bg-white p-6 rounded-2xl max-w-md w-full border-2 border-brand-red shadow-2xl space-y-4">
+      <div class="flex items-center gap-3 border-b border-brand-navy/15 pb-3.5">
+        <div class="w-11 h-11 rounded-xl bg-brand-red text-white flex items-center justify-center text-2xl font-black shadow-md flex-shrink-0 animate-pulse">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-black text-brand-navy uppercase">Advertencia de Trazabilidad</h3>
+          <p class="text-xs text-brand-red font-bold mt-0.5">Ubicación GPS Satelital No Verificada</p>
+        </div>
+      </div>
+
+      <div class="text-xs text-brand-navy space-y-2.5 leading-relaxed">
+        <p>Tu teléfono aún no ha transmitido coordenadas satelitales válidas. La norma HSEQ y el protocolo de auditoría de <strong>Grupo Eulen Colombia</strong> exigen georreferenciación en cada registro fotográfico.</p>
+        <div class="p-3 bg-red-50 border border-red-200 rounded-xl text-[11px] text-red-800 font-semibold">
+          <i class="fa-solid fa-circle-exclamation mr-1 text-brand-red"></i> Si capturas la imagen ahora, se estampará con advertencia de auditoría: 
+          <strong>"⚠️ UBICACIÓN NO VERIFICADA (GPS INACTIVO)"</strong>.
+        </div>
+      </div>
+
+      <div class="space-y-2 pt-2">
+        <button onclick="retryGPSFromModal()" class="w-full py-3.5 rounded-xl bg-brand-blue hover:bg-brand-navy text-white font-black text-xs flex items-center justify-center gap-2 shadow-md transition">
+          <i class="fa-solid fa-location-crosshairs text-sm"></i> REINTENTAR OBTENER GPS SATELITAL AHORA
+        </button>
+        <button onclick="proceedCaptureWithoutGPS()" class="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition">
+          Capturar de Todos Modos (Sin GPS)
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Notification Toast -->
   <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-brand-navy border border-brand-blue/50 text-white px-4.5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3">
     <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
@@ -756,7 +833,10 @@
     let watchPositionId = null;
     let gpsLogHistory = [];
     let isTrackingGPS = true;
-    let latestLat = 4.6097; // Default Bogotá coords fallback
+    let hasGPSFix = false; // Validated only when real device sensor coordinates are locked
+    let isFetchingGPS = false;
+    let gpsRetryWatchdog = null;
+    let latestLat = 4.6097; // Bogotá coords fallback
     let latestLon = -74.0817;
     let latestAccuracy = 0;
 
@@ -772,8 +852,7 @@
     window.onload = function() {
       checkEnvironmentDiagnostics();
       generateDefaultPlaceholderImage();
-      getGPSLocationHighAccuracy();
-      startAutomaticGPSWatch();
+      initGPSWatchdog();
       startChatbotWizard();
 
       // Ensure logos are preloaded and trigger initial canvas render
@@ -821,7 +900,12 @@
       if (navigator.permissions && navigator.permissions.query) {
         navigator.permissions.query({ name: 'geolocation' }).then(res => {
           updateGPSDiagBadge(res.state);
-          res.onchange = () => updateGPSDiagBadge(res.state);
+          res.onchange = () => {
+            updateGPSDiagBadge(res.state);
+            if (res.state === 'granted') {
+              forceGPSRefresh();
+            }
+          };
         }).catch(() => {});
 
         navigator.permissions.query({ name: 'camera' }).then(res => {
@@ -912,110 +996,235 @@
       }
     }
 
-    /* HIGH ACCURACY GPS GEOLOCATION ENGINE WITH ROBUST FALLBACK */
-    function getGPSLocationHighAccuracy() {
-      if ("geolocation" in navigator) {
-        document.getElementById('gps-accuracy-feedback').innerText = "Solicitando satélites GPS Grupo Eulen...";
-        
-        const optionsHigh = {
-          enableHighAccuracy: true,
-          timeout: 12000,
-          maximumAge: 0
-        };
+    /* AUTOMATIC HIGH-ACCURACY GPS GEOLOCATION & TRACEABILITY ENGINE */
+    function initGPSWatchdog() {
+      // 1. Immediate acquisition attempt
+      getGPSLocationHighAccuracy(false);
+      startAutomaticGPSWatch();
 
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            applyGPSPosition(position, true);
-          },
-          (err) => {
-            console.warn("High Accuracy GPS timed out or failed, trying standard accuracy fallback:", err);
-            const optionsStandard = {
-              enableHighAccuracy: false,
-              timeout: 10000,
-              maximumAge: 30000
-            };
-            navigator.geolocation.getCurrentPosition(
-              (pos) => applyGPSPosition(pos, false),
-              (fallbackErr) => {
-                console.error("GPS Fallback Error:", fallbackErr);
-                document.getElementById('gps-accuracy-feedback').innerText = "Señal GPS no disponible. Verifica permisos o activa ubicación en tu móvil.";
-                showToast("Verifica los permisos de ubicación GPS", "warning");
-              },
-              optionsStandard
-            );
-          },
-          optionsHigh
-        );
-      } else {
-        document.getElementById('gps-accuracy-feedback').innerText = "Tu navegador no soporta geolocalización.";
+      // 2. Intelligent automated background watchdog (retries every 4.5 seconds until fix is acquired)
+      if (gpsRetryWatchdog) clearInterval(gpsRetryWatchdog);
+      gpsRetryWatchdog = setInterval(() => {
+        if (!hasGPSFix && isTrackingGPS && !isFetchingGPS) {
+          getGPSLocationHighAccuracy(true); // silent background retry
+        }
+      }, 4500);
+    }
+
+    function getGPSLocationHighAccuracy(silent = false) {
+      if (!("geolocation" in navigator)) {
+        handleGPSError({ message: "Geolocalización no soportada" }, silent);
+        return;
+      }
+
+      isFetchingGPS = true;
+      if (!silent) {
+        const feedback = document.getElementById('gps-accuracy-feedback');
+        if (feedback) {
+          feedback.innerText = "Solicitando satélites GPS Grupo Eulen...";
+          feedback.className = 'text-[10px] text-brand-blue font-bold mt-1';
+        }
+      }
+
+      const optionsHigh = {
+        enableHighAccuracy: true,
+        timeout: 9000,
+        maximumAge: 0
+      };
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          isFetchingGPS = false;
+          applyGPSPosition(position, true);
+        },
+        (err) => {
+          // Graceful fallback to cell tower/network location if high accuracy times out
+          const optionsStandard = {
+            enableHighAccuracy: false,
+            timeout: 6000,
+            maximumAge: 20000
+          };
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              isFetchingGPS = false;
+              applyGPSPosition(pos, false);
+            },
+            (fallbackErr) => {
+              isFetchingGPS = false;
+              handleGPSError(fallbackErr, silent);
+            },
+            optionsStandard
+          );
+        },
+        optionsHigh
+      );
+    }
+
+    function applyGPSPosition(position, isHigh, fromWatch = false) {
+      const wasNoFix = !hasGPSFix;
+      hasGPSFix = true;
+
+      latestLat = position.coords.latitude;
+      latestLon = position.coords.longitude;
+      latestAccuracy = Math.round(position.coords.accuracy || 5);
+
+      const ddStr = `${latestLat.toFixed(6)}, ${latestLon.toFixed(6)}`;
+      const dmsStr = `${toDMS(latestLat, true)}, ${toDMS(latestLon, false)}`;
+
+      // Update Form Inputs
+      const inputCoords = document.getElementById('input-coords');
+      if (inputCoords) {
+        inputCoords.value = ddStr;
+      }
+
+      // Update Header GPS Pill
+      const dot = document.getElementById('gps-status-dot');
+      const headerCoords = document.getElementById('header-gps-coords');
+      const headerPill = document.getElementById('header-gps-pill');
+      if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 gps-active-indicator';
+      if (headerCoords) headerCoords.innerText = `${ddStr} (±${latestAccuracy}m)`;
+      if (headerPill) {
+        headerPill.className = 'cursor-pointer px-3 py-1.5 rounded-xl bg-emerald-950/40 border border-emerald-400/50 flex items-center gap-2 hover:bg-emerald-900/40 transition shadow-sm';
+      }
+
+      // Update Form Feedback
+      const feedback = document.getElementById('gps-accuracy-feedback');
+      if (feedback) {
+        feedback.innerText = `Precisión Satelital: +/- ${latestAccuracy}m (${isHigh ? 'Alta Precisión' : 'Red Móvil'}) - Trazabilidad Verificada`;
+        feedback.className = 'text-[10px] text-emerald-700 font-bold mt-1';
+      }
+
+      // Manage Dynamic Banners
+      const alertBanner = document.getElementById('gps-traceability-banner');
+      const verifiedBanner = document.getElementById('gps-verified-banner');
+      const verifiedAcc = document.getElementById('gps-verified-acc');
+      if (alertBanner) alertBanner.classList.add('hidden');
+      if (verifiedBanner) verifiedBanner.classList.remove('hidden');
+      if (verifiedAcc) verifiedAcc.innerText = `+/- ${latestAccuracy}m`;
+
+      // Update Tracker Status Tab
+      const trackerStatus = document.getElementById('gps-status-label');
+      if (trackerStatus) {
+        trackerStatus.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Activo (±${latestAccuracy}m)`;
+        trackerStatus.className = 'font-black text-emerald-600 flex items-center gap-1.5';
+      }
+      const trackerCoords = document.getElementById('gps-last-coords');
+      if (trackerCoords) {
+        trackerCoords.innerText = ddStr;
+      }
+
+      // Register Audit Point in History
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('es-ES');
+      const shouldAdd = gpsLogHistory.length === 0 || 
+        Math.abs(gpsLogHistory[0].lat - latestLat) > 0.00003 || 
+        Math.abs(gpsLogHistory[0].lon - latestLon) > 0.00003;
+
+      if (shouldAdd) {
+        gpsLogHistory.unshift({
+          index: gpsLogHistory.length + 1,
+          time: timeStr,
+          timestamp: now.toISOString(),
+          lat: latestLat,
+          lon: latestLon,
+          dd: ddStr,
+          dms: dmsStr,
+          accuracy: `+/- ${latestAccuracy}m`
+        });
+        updateGPSLogUI();
+      }
+
+      updateCanvas();
+
+      if (wasNoFix) {
+        showToast(`✅ GPS Satelital Fijado (+/- ${latestAccuracy}m) - Trazabilidad Asegurada`, "success");
       }
     }
 
-    function applyGPSPosition(position, isHigh) {
-      latestLat = position.coords.latitude;
-      latestLon = position.coords.longitude;
-      latestAccuracy = Math.round(position.coords.accuracy);
+    function handleGPSError(err, silent = false) {
+      if (hasGPSFix) return; // Do not disturb if already fixed
 
-      const ddStr = `${latestLat.toFixed(6)}, ${latestLon.toFixed(6)}`;
-      document.getElementById('input-coords').value = ddStr;
-      document.getElementById('header-gps-coords').innerText = ddStr;
-      document.getElementById('gps-accuracy-feedback').innerText = `Precisión: +/- ${latestAccuracy}m (${isHigh ? 'Satelital Alta Precisión' : 'Modo Estándar'})`;
+      const dot = document.getElementById('gps-status-dot');
+      const headerCoords = document.getElementById('header-gps-coords');
+      const headerPill = document.getElementById('header-gps-pill');
+      const alertBanner = document.getElementById('gps-traceability-banner');
+      const verifiedBanner = document.getElementById('gps-verified-banner');
+      const feedback = document.getElementById('gps-accuracy-feedback');
+      const trackerStatus = document.getElementById('gps-status-label');
 
-      updateCanvas();
-      showToast(`GPS obtenido (+/- ${latestAccuracy}m)`, "success");
+      if (alertBanner) alertBanner.classList.remove('hidden');
+      if (verifiedBanner) verifiedBanner.classList.add('hidden');
+
+      if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-red-500 animate-ping';
+      if (headerCoords) headerCoords.innerText = '⚠️ SIN SEÑAL GPS';
+      if (headerPill) {
+        headerPill.className = 'cursor-pointer px-3 py-1.5 rounded-xl bg-red-900/60 border border-red-500/80 flex items-center gap-2 hover:bg-red-800/60 transition shadow-sm animate-pulse';
+      }
+
+      let msg = "⚠️ Ubicación GPS no detectada. Enciende el GPS de tu móvil para garantizar la trazabilidad.";
+      if (err && err.code === 1) { // PERMISSION_DENIED
+        msg = "⚠️ Permiso de ubicación denegado. Presiona 'Permisos' para habilitarlo.";
+        updateGPSDiagBadge('denied');
+      } else if (err && err.code === 2) { // POSITION_UNAVAILABLE
+        msg = "⚠️ Sensor GPS apagado o sin satélites. Enciende la ubicación en los ajustes del teléfono.";
+      }
+
+      if (feedback) {
+        feedback.innerText = msg;
+        feedback.className = 'text-[10px] text-brand-red font-black mt-1';
+      }
+
+      if (trackerStatus) {
+        trackerStatus.innerHTML = `<span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span> Sin Señal GPS`;
+        trackerStatus.className = 'font-black text-brand-red flex items-center gap-1.5';
+      }
+
+      if (!silent) {
+        showToast(msg, "warning");
+      }
+    }
+
+    function forceGPSRefresh() {
+      showToast("Solicitando satélites GPS en tiempo real...", "info");
+      getGPSLocationHighAccuracy(false);
+      startAutomaticGPSWatch();
+    }
+
+    function handleHeaderGPSClick() {
+      if (hasGPSFix) {
+        openShareModal();
+      } else {
+        openPermissionsModal();
+      }
     }
 
     function startAutomaticGPSWatch() {
-      if ("geolocation" in navigator) {
-        const options = {
-          enableHighAccuracy: true,
-          maximumAge: 4000,
-          timeout: 15000
-        };
+      if (!("geolocation" in navigator)) return;
 
-        watchPositionId = navigator.geolocation.watchPosition(
-          (position) => {
-            if (!isTrackingGPS) return;
-            
-            latestLat = position.coords.latitude;
-            latestLon = position.coords.longitude;
-            const accuracy = position.coords.accuracy ? `${Math.round(position.coords.accuracy)}m` : 'N/A';
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('es-ES');
-
-            const ddStr = `${latestLat.toFixed(6)}, ${latestLon.toFixed(6)}`;
-            const dmsStr = `${toDMS(latestLat, true)}, ${toDMS(latestLon, false)}`;
-
-            document.getElementById('input-coords').value = ddStr;
-            document.getElementById('header-gps-coords').innerText = ddStr;
-
-            const shouldAdd = gpsLogHistory.length === 0 || 
-              Math.abs(gpsLogHistory[0].lat - latestLat) > 0.00004 || 
-              Math.abs(gpsLogHistory[0].lon - latestLon) > 0.00004;
-
-            if (shouldAdd) {
-              const point = {
-                index: gpsLogHistory.length + 1,
-                time: timeStr,
-                timestamp: now.toISOString(),
-                lat: latestLat,
-                lon: latestLon,
-                dd: ddStr,
-                dms: dmsStr,
-                accuracy: accuracy
-              };
-              gpsLogHistory.unshift(point);
-              updateGPSLogUI();
-            }
-
-            updateCanvas();
-          },
-          (err) => {
-            console.warn("Silent GPS watch notice:", err.message);
-          },
-          options
-        );
+      if (watchPositionId !== null) {
+        navigator.geolocation.clearWatch(watchPositionId);
+        watchPositionId = null;
       }
+
+      const options = {
+        enableHighAccuracy: true,
+        maximumAge: 3000,
+        timeout: 12000
+      };
+
+      watchPositionId = navigator.geolocation.watchPosition(
+        (position) => {
+          if (!isTrackingGPS) return;
+          applyGPSPosition(position, true, true);
+        },
+        (err) => {
+          console.warn("GPS watch notice:", err.message);
+          if (!hasGPSFix) {
+            handleGPSError(err, true);
+          }
+        },
+        options
+      );
     }
 
     function toggleGPSTracking() {
@@ -1042,23 +1251,25 @@
 
     function saveStartConfig() {
       const inspector = document.getElementById('setup-inspector').value.trim() || 'Supervisor HSEQ Eulen';
-      const client = document.getElementById('setup-client').value.trim() || 'Grupo Eulen Colombia';
-      const project = document.getElementById('setup-project').value.trim() || 'Operación General';
+      const delegacion = document.getElementById('setup-client').value.trim() || 'Delegación Bogotá';
+      const cliente = document.getElementById('setup-project').value.trim() || 'Cliente Operaciones';
 
       currentInspectorName = inspector;
-      document.getElementById('header-inspector-tag').innerText = `Inspector: ${inspector}`;
-      document.getElementById('input-client').value = client;
-      document.getElementById('input-project').value = project;
+      document.getElementById('header-inspector-tag').innerText = `Inspector: ${inspector} (${delegacion})`;
+      document.getElementById('input-client').value = delegacion;
+      document.getElementById('input-project').value = cliente;
 
       document.getElementById('modal-start').classList.add('hidden');
       updateCanvas();
-      showToast(`Turno iniciado: ${inspector}`, "success");
+      showToast(`Turno iniciado: ${inspector} | ${delegacion}`, "success");
     }
 
     function openShareModal() {
-      const ddStr = `${latestLat.toFixed(6)}, ${latestLon.toFixed(6)}`;
+      const ddStr = hasGPSFix ? `${latestLat.toFixed(6)}, ${latestLon.toFixed(6)}` : 'Ubicación Satelital No Verificada';
       document.getElementById('share-coords-text').innerText = ddStr;
-      document.getElementById('share-time-text').innerText = `Fecha / Hora: ${new Date().toLocaleString('es-ES')}`;
+      document.getElementById('share-time-text').innerText = hasGPSFix 
+        ? `Fecha / Hora: ${new Date().toLocaleString('es-ES')} | Precisión: +/- ${latestAccuracy}m`
+        : `⚠️ GPS Inactivo - Activa la geolocalización de tu móvil`;
       document.getElementById('modal-share').classList.remove('hidden');
     }
 
@@ -1067,6 +1278,10 @@
     }
 
     function shareViaWhatsApp() {
+      if (!hasGPSFix) {
+        showToast("⚠️ Activa el GPS satelital antes de compartir la ubicación", "warning");
+        return;
+      }
       const coords = `${latestLat.toFixed(6)},${latestLon.toFixed(6)}`;
       const mapsUrl = `https://maps.google.com/?q=${coords}`;
       const msg = `🚨 *GRUPO EULEN COLOMBIA - UBICACIÓN HSEQ EN TIEMPO REAL*\nSupervisor: ${currentInspectorName}\nCoordenadas: ${coords}\nPrecisión: +/- ${latestAccuracy}m\nVer en Google Maps: ${mapsUrl}`;
@@ -1075,6 +1290,10 @@
     }
 
     function copyMapsLink() {
+      if (!hasGPSFix) {
+        showToast("⚠️ Activa el GPS satelital para generar el enlace de mapa", "warning");
+        return;
+      }
       const coords = `${latestLat.toFixed(6)},${latestLon.toFixed(6)}`;
       const mapsUrl = `https://maps.google.com/?q=${coords}`;
       navigator.clipboard.writeText(mapsUrl);
@@ -1166,20 +1385,23 @@
       const today = now.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
       const generatedTime = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 
-      const clientName = (document.getElementById('input-client') ? document.getElementById('input-client').value : '').trim() || 'Grupo Eulen Colombia - Operaciones';
-      const projectName = (document.getElementById('input-project') ? document.getElementById('input-project').value : '').trim() || 'Sede Principal / Centro Logístico';
+      const clientName = (document.getElementById('input-client') ? document.getElementById('input-client').value : '').trim() || 'Delegación Bogotá';
+      const projectName = (document.getElementById('input-project') ? document.getElementById('input-project').value : '').trim() || 'Cliente General';
       const weatherCondition = document.getElementById('input-weather') ? document.getElementById('input-weather').value : '☀️ Soleado | 24°C';
 
       const totalGPSPoints = gpsLogHistory.length;
-      const lastGPS = gpsLogHistory[0] ? gpsLogHistory[0].dd : document.getElementById('input-coords').value;
+      const lastGPS = hasGPSFix ? (gpsLogHistory[0] ? gpsLogHistory[0].dd : document.getElementById('input-coords').value) : 'NO REGISTRADA (GPS INACTIVO)';
+      const gpsTraceabilityStatus = hasGPSFix 
+        ? `✅ CONFORME - Georreferenciación Satelital Activa (+/- ${latestAccuracy}m)`
+        : `⚠️ ALERTA DE TRAZABILIDAD - Sin Coordenadas Satelitales (GPS Inactivo)`;
 
       const reportText = 
 `==================================================
       GRUPO EULEN COLOMBIA - HSEQ FIELD PRO
    INFORME Y BITÁCORA DIARIA DE CAMPO Y SUPERVISIÓN
 ==================================================
-• EMPRESA / CLIENTE:      ${clientName.toUpperCase()}
-• PROYECTO / FRENTE:      ${projectName.toUpperCase()}
+• DELEGACIÓN:             ${clientName.toUpperCase()}
+• NOMBRE DE CLIENTE:      ${projectName.toUpperCase()}
 • SUPERVISOR / INSPECTOR: ${currentInspectorName.toUpperCase()}
 • FECHA DE OPERACIÓN:     ${today.toUpperCase()}
 • HORA DE GENERACIÓN:     ${generatedTime}
@@ -1198,7 +1420,8 @@
 3. CAPACITACIÓN Y FORMACIÓN OPERACIONAL:
    ${chatAnswers.trainingNotes || 'Charla de 5 minutos sobre autocuidado, reporte oportuno y trabajo seguro.'}
 
-4. RASTREO SATELITAL Y PUNTOS DE CONTROL GPS:
+4. RASTREO SATELITAL Y TRAZABILIDAD GPS:
+   • Estado de Trazabilidad: ${gpsTraceabilityStatus}
    • Total de Registros Monitoreados: ${totalGPSPoints} puntos satelitales
    • Última Ubicación Verificada: ${lastGPS}
 
@@ -1233,20 +1456,21 @@ GENERADO EL: ${today} A LAS ${generatedTime}
       const generatedTime = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
       const dateIso = now.toISOString().slice(0, 10);
 
-      const clientName = (document.getElementById('input-client') ? document.getElementById('input-client').value : '').trim() || 'Grupo Eulen Colombia';
-      const projectName = (document.getElementById('input-project') ? document.getElementById('input-project').value : '').trim() || 'Operación General';
+      const clientName = (document.getElementById('input-client') ? document.getElementById('input-client').value : '').trim() || 'Delegación Bogotá';
+      const projectName = (document.getElementById('input-project') ? document.getElementById('input-project').value : '').trim() || 'Cliente General';
       const weatherCondition = document.getElementById('input-weather') ? document.getElementById('input-weather').value : 'No especificado';
       const reportText = document.getElementById('output-generated-report').value;
 
       const workbook = XLSX.utils.book_new();
 
       const summaryTable = [
-        { "PARÁMETRO": "Empresa / Cliente", "DETALLE": clientName },
-        { "PARÁMETRO": "Proyecto / Frente de Trabajo", "DETALLE": projectName },
+        { "PARÁMETRO": "Delegación Eulen", "DETALLE": clientName },
+        { "PARÁMETRO": "Nombre de Cliente", "DETALLE": projectName },
         { "PARÁMETRO": "Supervisor / Inspector HSEQ", "DETALLE": currentInspectorName },
         { "PARÁMETRO": "Fecha de Jornada", "DETALLE": dateIso },
         { "PARÁMETRO": "Hora Exacta de Generación", "DETALLE": generatedTime },
         { "PARÁMETRO": "Clima Registrado en Sitio", "DETALLE": weatherCondition },
+        { "PARÁMETRO": "Trazabilidad Satelital HSEQ", "DETALLE": hasGPSFix ? `Verificado (+/- ${latestAccuracy}m)` : "ALERTA: UBICACIÓN NO VERIFICADA (GPS INACTIVO)" },
         { "PARÁMETRO": "Hora de Inicio Jornada", "DETALLE": chatAnswers.startTime || '06:30 AM' },
         { "PARÁMETRO": "Hora de Cierre Jornada", "DETALLE": chatAnswers.endTime || '05:00 PM' },
         { "PARÁMETRO": "Sedes / Puestos Supervisados", "DETALLE": chatAnswers.clientCount || '1' },
@@ -1312,8 +1536,9 @@ GENERADO EL: ${today} A LAS ${generatedTime}
         const constraints = {
           video: {
             facingMode: { ideal: facingMode },
-            width: { ideal: 1920 },
-            height: { ideal: 1080 }
+            width: { ideal: 1080 },
+            height: { ideal: 1920 },
+            aspectRatio: { ideal: 9 / 16 }
           },
           audio: false
         };
@@ -1374,6 +1599,21 @@ GENERADO EL: ${today} A LAS ${generatedTime}
 
     function captureLiveSnapshot() {
       const video = document.getElementById('webcam-video');
+      if (!video || video.videoWidth === 0) {
+        showToast("Primero abre la cámara para capturar", "warning");
+        return;
+      }
+
+      if (!hasGPSFix) {
+        openGPSWarningModal();
+        return;
+      }
+
+      executeCaptureSnapshot();
+    }
+
+    function executeCaptureSnapshot() {
+      const video = document.getElementById('webcam-video');
       if (!video || video.videoWidth === 0) return;
 
       const tempCanvas = document.createElement('canvas');
@@ -1388,12 +1628,45 @@ GENERADO EL: ${today} A LAS ${generatedTime}
       img.src = inspectionImageSrc;
 
       stopCameraStream();
-      showToast("Foto de inspección capturada con éxito", "success");
+      closeGPSWarningModal();
+      showToast(hasGPSFix ? "Foto capturada y georreferenciada con éxito" : "Foto capturada (Sin georreferenciación satelital)", hasGPSFix ? "success" : "warning");
+    }
+
+    function openGPSWarningModal() {
+      const modal = document.getElementById('modal-gps-warning');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeGPSWarningModal() {
+      const modal = document.getElementById('modal-gps-warning');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function retryGPSFromModal() {
+      showToast("Buscando satélites GPS en tiempo real...", "info");
+      getGPSLocationHighAccuracy(false);
+      setTimeout(() => {
+        if (hasGPSFix) {
+          closeGPSWarningModal();
+          showToast("GPS fijado con éxito. Ya puedes capturar con trazabilidad", "success");
+        } else {
+          showToast("Aún buscando satélites. Verifica que la ubicación esté encendida en tu móvil", "warning");
+        }
+      }, 2500);
+    }
+
+    function proceedCaptureWithoutGPS() {
+      closeGPSWarningModal();
+      executeCaptureSnapshot();
     }
 
     function handlePhotoUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
+
+      if (!hasGPSFix) {
+        showToast("⚠️ Advertencia: Foto cargada sin georreferenciación satelital activa", "warning");
+      }
 
       stopCameraStream();
       const reader = new FileReader();
@@ -1452,24 +1725,40 @@ GENERADO EL: ${today} A LAS ${generatedTime}
 
     function generateDefaultPlaceholderImage() {
       const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = 1200;
-      tempCanvas.height = 900;
+      tempCanvas.width = 1080;
+      tempCanvas.height = 1920;
       const ctx = tempCanvas.getContext('2d');
 
-      const bgGrad = ctx.createLinearGradient(0, 0, 1200, 900);
+      const bgGrad = ctx.createLinearGradient(0, 0, 1080, 1920);
       bgGrad.addColorStop(0, '#002664');
-      bgGrad.addColorStop(1, '#011538');
+      bgGrad.addColorStop(0.5, '#011538');
+      bgGrad.addColorStop(1, '#001a45');
       ctx.fillStyle = bgGrad;
-      ctx.fillRect(0, 0, 1200, 900);
+      ctx.fillRect(0, 0, 1080, 1920);
 
-      ctx.font = '900 36px Montserrat';
+      // Grid guides for smartphone camera viewfinder
+      ctx.strokeStyle = 'rgba(0, 169, 224, 0.2)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(360, 0); ctx.lineTo(360, 1920);
+      ctx.moveTo(720, 0); ctx.lineTo(720, 1920);
+      ctx.moveTo(0, 640); ctx.lineTo(1080, 640);
+      ctx.moveTo(0, 1280); ctx.lineTo(1080, 1280);
+      ctx.stroke();
+
+      ctx.font = '900 44px Montserrat';
       ctx.fillStyle = '#00a9e0';
       ctx.textAlign = 'center';
-      ctx.fillText("📷 CAPTURA FOTO DE INSPECCIÓN - GRUPO EULEN", 600, 410);
+      ctx.fillText("📷 CÁMARA DE INSPECCIÓN HSEQ", 540, 880);
 
-      ctx.font = '600 20px Montserrat';
+      ctx.font = '800 32px Montserrat';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText("GRUPO EULEN COLOMBIA", 540, 940);
+
+      ctx.font = '600 22px Montserrat';
       ctx.fillStyle = '#e8e6df';
-      ctx.fillText("Presiona 'Abrir Cámara' o 'Subir Galería' para iniciar", 600, 460);
+      ctx.fillText("Formato Vertical 9:16 Pantalla Celular", 540, 1000);
+      ctx.fillText("Presiona 'Abrir Cámara' para iniciar", 540, 1045);
 
       inspectionImageSrc = tempCanvas.toDataURL('image/png');
       const img = document.getElementById('img-inspection-source');
@@ -1477,7 +1766,7 @@ GENERADO EL: ${today} A LAS ${generatedTime}
       img.src = inspectionImageSrc;
     }
 
-    /* SUBTLE & PROPORTIONAL CANVAS STAMP OVERLAY RENDERER WITH EULEN LOGO */
+    /* SUBTLE & PROPORTIONAL CANVAS STAMP OVERLAY RENDERER (SMARTPHONE 9:16 ORIENTATION) */
     function updateCanvas() {
       const canvas = document.getElementById('hseq-canvas');
       const ctx = canvas.getContext('2d');
@@ -1485,8 +1774,8 @@ GENERADO EL: ${today} A LAS ${generatedTime}
 
       if (!sourceImg || !sourceImg.complete || sourceImg.naturalWidth === 0) return;
 
-      const renderWidth = 1200;
-      const renderHeight = (sourceImg.naturalHeight / sourceImg.naturalWidth) * renderWidth || 900;
+      const renderWidth = 1080;
+      const renderHeight = Math.round((sourceImg.naturalHeight / sourceImg.naturalWidth) * renderWidth) || 1920;
 
       canvas.width = renderWidth;
       canvas.height = renderHeight;
@@ -1494,14 +1783,14 @@ GENERADO EL: ${today} A LAS ${generatedTime}
       // Draw Base Photo
       ctx.drawImage(sourceImg, 0, 0, renderWidth, renderHeight);
 
-      // Dynamic Form Data
-      const client = document.getElementById('input-client').value || 'Grupo Eulen Colombia';
-      const project = document.getElementById('input-project').value || 'Operación General';
-      const activity = document.getElementById('input-activity').value;
-      const weather = document.getElementById('input-weather').value;
-      const coords = document.getElementById('input-coords').value;
-      const city = document.getElementById('input-city').value;
-      const description = document.getElementById('input-description').value;
+      // Dynamic Form Data with Delegación and Nombre de Cliente
+      const delegacion = (document.getElementById('input-client') ? document.getElementById('input-client').value : '').trim() || 'Delegación Bogotá';
+      const cliente = (document.getElementById('input-project') ? document.getElementById('input-project').value : '').trim() || 'Cliente General';
+      const activity = document.getElementById('input-activity') ? document.getElementById('input-activity').value : 'Inspección General';
+      const weather = document.getElementById('input-weather') ? document.getElementById('input-weather').value : 'Soleado';
+      const coords = document.getElementById('input-coords') ? document.getElementById('input-coords').value : 'Sin coordenadas';
+      const city = document.getElementById('input-city') ? document.getElementById('input-city').value : 'Colombia';
+      const description = document.getElementById('input-description') ? document.getElementById('input-description').value : '';
       
       const opacityInput = document.getElementById('input-overlay-opacity');
       const overlayOpacity = opacityInput ? parseFloat(opacityInput.value) : 0.82;
@@ -1515,91 +1804,94 @@ GENERADO EL: ${today} A LAS ${generatedTime}
 
       const catTheme = categoryConfig[currentCategory] || categoryConfig['Seguimiento Diario'];
 
-      // COMPACT BANNER DIMENSIONS (Max 28% of canvas height)
-      const overlayMargin = 16;
-      const overlayHeight = Math.min(renderHeight * 0.28, 250);
+      // PROPORTIONAL BANNER (Height adjusted for vertical smartphone screen)
+      const overlayMargin = 20;
+      const isPortrait = renderHeight >= renderWidth;
+      const overlayHeight = isPortrait 
+        ? Math.min(Math.max(renderHeight * 0.20, 280), 360)
+        : Math.min(renderHeight * 0.28, 250);
       const overlayY = renderHeight - overlayHeight - overlayMargin;
       const overlayWidth = renderWidth - (overlayMargin * 2);
-      const borderRadius = 16;
+      const borderRadius = 20;
 
       ctx.save();
 
       // Translucent Backdrop Fill (Glassmorphism)
       ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-      ctx.shadowBlur = 12;
+      ctx.shadowBlur = 14;
 
       if (style === 'dark') {
         ctx.fillStyle = `rgba(0, 38, 100, ${overlayOpacity})`; /* Translucent #002664 Navy */
-        ctx.strokeStyle = 'rgba(0, 169, 224, 0.5)';           /* Translucent #00a9e0 Cyan Border */
+        ctx.strokeStyle = 'rgba(0, 169, 224, 0.55)';          /* Translucent Cyan Border */
       } else {
         ctx.fillStyle = `rgba(240, 239, 235, ${overlayOpacity})`; /* Translucent Warm White */
         ctx.strokeStyle = 'rgba(0, 38, 100, 0.35)';
       }
 
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2.5;
       roundRect(ctx, overlayMargin, overlayY, overlayWidth, overlayHeight, borderRadius, true, true);
       ctx.shadowBlur = 0;
 
       // Top Category Accent Line
       ctx.fillStyle = catTheme.color;
-      roundRect(ctx, overlayMargin, overlayY, overlayWidth, 5, { tl: borderRadius, tr: borderRadius, bl: 0, br: 0 }, true, false);
+      roundRect(ctx, overlayMargin, overlayY, overlayWidth, 6, { tl: borderRadius, tr: borderRadius, bl: 0, br: 0 }, true, false);
 
       const textColorPrimary = style === 'dark' ? '#FFFFFF' : '#002664';
       const textColorSecondary = style === 'dark' ? '#00a9e0' : '#002664';
       const textColorMuted = style === 'dark' ? '#e8e6df' : '#334155';
 
-      // AUTOMATIC GRUPO EULEN LOGO RENDERING (PROPORTIONAL RATIO)
+      // AUTOMATIC GRUPO EULEN LOGO RENDERING
       const eulenLogo = style === 'dark' 
         ? document.getElementById('img-logo-dark') 
         : document.getElementById('img-logo-light');
 
-      let headerTextX = overlayMargin + 18;
+      let headerTextX = overlayMargin + 20;
 
       if (eulenLogo && eulenLogo.complete && eulenLogo.naturalWidth > 0) {
-        const logoTargetHeight = 44;
+        const logoTargetHeight = 46;
         const logoAspect = eulenLogo.naturalWidth / eulenLogo.naturalHeight;
         const logoTargetWidth = logoTargetHeight * logoAspect;
-        const logoY = overlayY + 12;
+        const logoY = overlayY + 14;
 
         ctx.drawImage(eulenLogo, overlayMargin + 16, logoY, logoTargetWidth, logoTargetHeight);
         headerTextX = overlayMargin + 16 + logoTargetWidth + 16;
       }
 
-      // Client & Project Header
-      ctx.font = '800 19px Montserrat';
+      // Header: DELEGACIÓN & NOMBRE DE CLIENTE
+      ctx.font = '800 20px Montserrat';
       ctx.fillStyle = textColorPrimary;
       ctx.textAlign = 'left';
-      ctx.fillText(client.toUpperCase(), headerTextX, overlayY + 30);
+      ctx.fillText(delegacion.toUpperCase(), headerTextX, overlayY + 34);
 
       ctx.font = '700 13px Montserrat';
       ctx.fillStyle = textColorMuted;
-      ctx.fillText(`Proyecto: ${project} | Supervisor: ${currentInspectorName}`, headerTextX, overlayY + 49);
+      ctx.fillText(`Cliente: ${cliente} | Supervisor: ${currentInspectorName}`, headerTextX, overlayY + 54);
 
       // CATEGORY BADGE (Compact Top Right)
       const badgeText = currentCategory.toUpperCase();
       ctx.font = '800 12px Montserrat';
-      const badgeWidth = ctx.measureText(badgeText).width + 22;
+      const badgeWidth = ctx.measureText(badgeText).width + 24;
       const badgeX = overlayMargin + overlayWidth - badgeWidth - 16;
       const badgeY = overlayY + 14;
 
       ctx.fillStyle = catTheme.color;
-      roundRect(ctx, badgeX, badgeY, badgeWidth, 26, 6, true, false);
+      roundRect(ctx, badgeX, badgeY, badgeWidth, 28, 7, true, false);
 
       ctx.fillStyle = '#FFFFFF';
       ctx.textAlign = 'center';
-      ctx.fillText(badgeText, badgeX + (badgeWidth / 2), badgeY + 17);
+      ctx.fillText(badgeText, badgeX + (badgeWidth / 2), badgeY + 18);
 
       // Subtle Divider Line
-      ctx.strokeStyle = style === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 38, 100, 0.15)';
+      ctx.strokeStyle = style === 'dark' ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 38, 100, 0.18)';
       ctx.beginPath();
-      ctx.moveTo(overlayMargin + 16, overlayY + 63);
-      ctx.lineTo(overlayMargin + overlayWidth - 16, overlayY + 63);
+      ctx.moveTo(overlayMargin + 16, overlayY + 68);
+      ctx.lineTo(overlayMargin + overlayWidth - 16, overlayY + 68);
       ctx.stroke();
 
       // TWO COLUMN STREAMLINED CONTENT LAYOUT
-      const contentY = overlayY + 83;
-      const leftColX = overlayMargin + 18;
-      const rightColX = overlayMargin + (overlayWidth * 0.53);
+      const contentY = overlayY + 90;
+      const leftColX = overlayMargin + 20;
+      const rightColX = overlayMargin + (overlayWidth * 0.52);
 
       // Left Column: Activity & Field Observation
       ctx.font = '800 12px Montserrat';
@@ -1617,7 +1909,7 @@ GENERADO EL: ${today} A LAS ${generatedTime}
 
       ctx.font = '600 13px Montserrat';
       ctx.fillStyle = textColorMuted;
-      wrapText(ctx, description, leftColX, contentY + 43, (overlayWidth * 0.49), 17);
+      wrapText(ctx, description, leftColX, contentY + 44, (overlayWidth * 0.48), 18);
 
       // Right Column: Date, Coords & Weather
       ctx.font = '800 12px Montserrat';
@@ -1632,9 +1924,15 @@ GENERADO EL: ${today} A LAS ${generatedTime}
       ctx.fillStyle = textColorSecondary;
       ctx.fillText("UBICACIÓN GPS:", rightColX, contentY + 24);
 
-      ctx.font = '700 12px Montserrat';
-      ctx.fillStyle = textColorPrimary;
-      ctx.fillText(`${coords} (${city})`, rightColX + 108, contentY + 24);
+      if (hasGPSFix) {
+        ctx.font = '700 12px Montserrat';
+        ctx.fillStyle = textColorPrimary;
+        ctx.fillText(`${coords} (±${latestAccuracy}m)`, rightColX + 108, contentY + 24);
+      } else {
+        ctx.font = '800 11px Montserrat';
+        ctx.fillStyle = '#f5333f';
+        ctx.fillText("⚠️ NO VERIFICADA (GPS INACTIVO)", rightColX + 108, contentY + 24);
+      }
 
       ctx.font = '800 12px Montserrat';
       ctx.fillStyle = textColorSecondary;
@@ -1646,9 +1944,14 @@ GENERADO EL: ${today} A LAS ${generatedTime}
 
       // Watermark Verification Tag
       ctx.font = '700 10px Montserrat';
-      ctx.fillStyle = style === 'dark' ? 'rgba(232, 230, 223, 0.65)' : 'rgba(0, 38, 100, 0.65)';
+      ctx.fillStyle = hasGPSFix 
+        ? (style === 'dark' ? 'rgba(232, 230, 223, 0.7)' : 'rgba(0, 38, 100, 0.7)')
+        : '#f5333f';
       ctx.textAlign = 'right';
-      ctx.fillText("SISTEMA HSEQ FIELD PRO - GRUPO EULEN COLOMBIA - REGISTRO AUDITADO", overlayMargin + overlayWidth - 16, overlayY + overlayHeight - 10);
+      const watermarkTag = hasGPSFix
+        ? "SISTEMA HSEQ FIELD PRO - GRUPO EULEN COLOMBIA - REGISTRO AUDITADO Y GEORREFERENCIADO"
+        : "SISTEMA HSEQ FIELD PRO - GRUPO EULEN COLOMBIA - ⚠️ REGISTRO SIN GEORREFERENCIACIÓN SATELITAL";
+      ctx.fillText(watermarkTag, overlayMargin + overlayWidth - 16, overlayY + overlayHeight - 12);
 
       ctx.restore();
     }
