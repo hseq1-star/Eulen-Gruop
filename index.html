@@ -247,10 +247,40 @@
             </span>
           </div>
 
-          <!-- Live Camera Stream UI (Mobile Smartphone Aspect Ratio 9:16) -->
-          <div id="camera-stream-container" class="relative rounded-3xl overflow-hidden bg-brand-navy border-4 border-brand-navy/30 aspect-[9/16] w-full max-w-[340px] mx-auto flex flex-col items-center justify-center shadow-2xl">
-            <video id="webcam-video" autoplay playsinline class="w-full h-full object-cover hidden"></video>
+          <!-- Live Camera Stream UI (Mobile Smartphone Aspect Ratio 9:16 with Dynamic Native Controls) -->
+          <div id="camera-stream-container" class="relative rounded-3xl overflow-hidden bg-brand-navy border-4 border-brand-navy/30 aspect-[9/16] w-full max-w-[340px] mx-auto flex flex-col items-center justify-center shadow-2xl select-none group">
             
+            <!-- Live Video Stream -->
+            <video id="webcam-video" autoplay playsinline class="w-full h-full object-cover hidden transition-transform duration-75 origin-center"></video>
+            
+            <!-- Composition Grid 3x3 (Rule of Thirds) -->
+            <div id="camera-grid-overlay" class="absolute inset-0 pointer-events-none hidden z-10">
+              <div class="w-full h-full grid grid-cols-3 grid-rows-3 border border-white/20">
+                <div class="border-r border-b border-white/25"></div>
+                <div class="border-r border-b border-white/25"></div>
+                <div class="border-b border-white/25"></div>
+                <div class="border-r border-b border-white/25"></div>
+                <div class="border-r border-b border-white/25"></div>
+                <div class="border-b border-white/25"></div>
+                <div class="border-r border-b border-white/25"></div>
+                <div class="border-r border-b border-white/25"></div>
+                <div></div>
+              </div>
+            </div>
+
+            <!-- Tap to Focus Animated Ring -->
+            <div id="camera-focus-ring" class="absolute pointer-events-none hidden w-16 h-16 border-2 border-amber-400 rounded-xl shadow-lg -translate-x-1/2 -translate-y-1/2 transition-transform duration-150 z-20 flex items-center justify-center">
+              <div class="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
+              <i class="fa-solid fa-sun text-amber-300 text-[10px] absolute -right-4 top-1 animate-pulse"></i>
+            </div>
+
+            <!-- Shutter Flash Animation Effect -->
+            <div id="camera-shutter-flash" class="absolute inset-0 bg-white pointer-events-none opacity-0 transition-opacity duration-100 z-30"></div>
+
+            <!-- Countdown Timer Number Overlay -->
+            <div id="camera-countdown" class="absolute inset-0 flex items-center justify-center pointer-events-none hidden z-30 text-white font-black text-8xl drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)] animate-pulse">3</div>
+
+            <!-- Standby Placeholder Card (When camera is closed) -->
             <div id="camera-placeholder" class="p-6 text-center flex flex-col items-center justify-center text-white space-y-3">
               <div class="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center border border-white/20 mb-1 shadow-md">
                 <i class="fa-solid fa-mobile-screen text-3xl text-brand-blue"></i>
@@ -259,24 +289,86 @@
                 <p class="text-sm font-black text-white">Cámara Móvil Smartphone</p>
                 <span class="text-[10px] text-brand-blue font-extrabold px-2 py-0.5 rounded bg-white/10 border border-brand-blue/30">Formato 9:16 Pantalla Celular</span>
               </div>
-              <p class="text-[11px] text-brand-cream/80 max-w-xs leading-relaxed">Presiona "Abrir Cámara" para activar el lente de tu smartphone o sube una imagen de la galería.</p>
+              <p class="text-[11px] text-brand-cream/80 max-w-xs leading-relaxed">Presiona "Abrir Cámara" para activar el visor con zoom, flash, cuadrícula y enfoque táctil.</p>
             </div>
 
-            <!-- Live Camera Controls Toolbar Overlay -->
-            <div id="camera-controls-bar" class="absolute bottom-4 left-3 right-3 hidden flex items-center justify-between gap-2 bg-brand-navy/95 backdrop-blur-md p-2.5 rounded-2xl border border-white/20 shadow-2xl z-10">
-              <button type="button" onclick="switchCameraFacing()" title="Voltear Cámara Trasera/Frontal" class="p-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition flex items-center justify-center w-10 h-10">
-                <i class="fa-solid fa-camera-rotate text-sm text-brand-blue"></i>
+            <!-- TOP OVERLAY TOOLBAR (Smartphone Quick Actions) -->
+            <div id="camera-top-bar" class="absolute top-3 left-3 right-3 hidden flex items-center justify-between z-20 bg-brand-dark/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 shadow-lg text-white">
+              <!-- Torch / Flash Button -->
+              <button type="button" onclick="toggleTorch()" id="btn-torch" title="Linterna de Inspección" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition text-xs">
+                <i class="fa-solid fa-bolt text-amber-300"></i>
               </button>
-              <button type="button" onclick="toggleTorch()" id="btn-torch" title="Linterna / Flash" class="p-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition flex items-center justify-center w-10 h-10">
-                <i class="fa-solid fa-bolt text-sm text-amber-300"></i>
+
+              <!-- Grid Toggle -->
+              <button type="button" onclick="toggleCameraGrid()" id="btn-grid" title="Cuadrícula 3x3 de Composición" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition text-xs">
+                <i class="fa-solid fa-border-all text-white/80"></i>
               </button>
-              <button type="button" onclick="captureLiveSnapshot()" class="flex-1 py-3 px-3 rounded-xl bg-brand-red text-white font-black text-xs shadow-lg transition flex items-center justify-center gap-2 hover:bg-red-600 active:scale-95">
-                <i class="fa-solid fa-circle-dot text-base animate-pulse"></i> CAPTURAR
+
+              <!-- Countdown Timer (Off / 3s) -->
+              <button type="button" onclick="toggleCameraTimer()" id="btn-timer" title="Temporizador (0s / 3s)" class="px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 flex items-center gap-1 transition text-[11px] font-mono font-black">
+                <i class="fa-solid fa-stopwatch text-brand-blue"></i> <span id="camera-timer-label">0s</span>
               </button>
-              <button type="button" onclick="stopCameraStream()" title="Cerrar Cámara" class="p-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition flex items-center justify-center w-10 h-10">
-                <i class="fa-solid fa-xmark text-sm text-red-400"></i>
+
+              <!-- Aspect Ratio Badge -->
+              <span class="text-[10px] font-black text-emerald-300 px-2 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-500/40">9:16 HD</span>
+
+              <!-- Close Camera Button -->
+              <button type="button" onclick="stopCameraStream()" title="Cerrar Cámara" class="w-8 h-8 rounded-full bg-red-600/80 hover:bg-red-500 flex items-center justify-center transition text-xs">
+                <i class="fa-solid fa-xmark text-white"></i>
               </button>
             </div>
+
+            <!-- ZOOM CONTROLS (Floating Zoom Pills & Zoom Level Indicator) -->
+            <div id="camera-zoom-bar" class="absolute bottom-24 left-0 right-0 hidden flex flex-col items-center gap-1.5 z-20 pointer-events-auto">
+              <!-- Zoom Readout Text -->
+              <div class="text-[10px] font-mono font-black text-white/90 bg-black/60 backdrop-blur-sm px-2.5 py-0.5 rounded-full border border-white/20 shadow-md">
+                Zoom: <span id="camera-zoom-text" class="text-brand-blue font-bold">1.0x</span>
+              </div>
+
+              <!-- Quick Zoom Presets Pills -->
+              <div class="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 shadow-xl">
+                <button type="button" onclick="setCameraZoom(0.8)" id="btn-zoom-08" class="zoom-btn px-2.5 py-1 rounded-full text-[11px] font-black font-mono text-white/80 hover:text-white transition">0.8x</button>
+                <button type="button" onclick="setCameraZoom(1.0)" id="btn-zoom-10" class="zoom-btn px-2.5 py-1 rounded-full text-[11px] font-black font-mono bg-brand-blue text-white shadow-sm transition">1x</button>
+                <button type="button" onclick="setCameraZoom(2.0)" id="btn-zoom-20" class="zoom-btn px-2.5 py-1 rounded-full text-[11px] font-black font-mono text-white/80 hover:text-white transition">2x</button>
+                <button type="button" onclick="setCameraZoom(3.0)" id="btn-zoom-30" class="zoom-btn px-2.5 py-1 rounded-full text-[11px] font-black font-mono text-white/80 hover:text-white transition">3x</button>
+                <button type="button" onclick="setCameraZoom(5.0)" id="btn-zoom-50" class="zoom-btn px-2.5 py-1 rounded-full text-[11px] font-black font-mono text-white/80 hover:text-white transition">5x</button>
+              </div>
+
+              <!-- Smooth Zoom Slider -->
+              <div class="flex items-center gap-2 w-48 px-3 py-1 bg-black/50 backdrop-blur-sm rounded-full border border-white/15">
+                <i class="fa-solid fa-magnifying-glass-minus text-[10px] text-white/60"></i>
+                <input type="range" id="camera-zoom-slider" min="0.8" max="5.0" step="0.1" value="1.0" oninput="setCameraZoom(parseFloat(this.value))" class="w-full accent-brand-blue cursor-pointer h-1.5">
+                <i class="fa-solid fa-magnifying-glass-plus text-[10px] text-white/60"></i>
+              </div>
+            </div>
+
+            <!-- BOTTOM SHUTTER TOOLBAR (Native Smartphone Camera Look) -->
+            <div id="camera-controls-bar" class="absolute bottom-3 left-3 right-3 hidden flex items-center justify-between z-20 px-3 py-2 bg-brand-dark/75 backdrop-blur-md rounded-2xl border border-white/20 shadow-2xl">
+              <!-- Switch Camera Facing Button (Rotate Lens) -->
+              <button type="button" onclick="switchCameraFacing()" title="Voltear Lente Trasero/Frontal" class="w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 active:scale-90 text-white transition flex items-center justify-center shadow-md">
+                <i class="fa-solid fa-camera-rotate text-lg text-brand-blue"></i>
+              </button>
+
+              <!-- Central Circular Shutter Button (Smartphone Camera Shutter) -->
+              <button type="button" onclick="triggerShutterCapture()" id="btn-shutter" title="Tomar Fotografía" class="relative w-16 h-16 rounded-full border-4 border-white flex items-center justify-center p-1 bg-transparent active:scale-95 transition-transform shadow-2xl focus:outline-none">
+                <span class="w-full h-full rounded-full bg-brand-red flex items-center justify-center text-white shadow-inner">
+                  <i class="fa-solid fa-camera text-xl"></i>
+                </span>
+              </button>
+
+              <!-- Exposure/Brightness Toggle -->
+              <button type="button" onclick="toggleExposureSlider()" title="Ajuste de Luz / Brillo" id="btn-exposure" class="w-12 h-12 rounded-full bg-white/15 hover:bg-white/25 active:scale-90 text-white transition flex items-center justify-center shadow-md">
+                <i class="fa-solid fa-sun text-lg text-amber-300"></i>
+              </button>
+            </div>
+
+            <!-- Exposure Floating Slider (Appears on clicking exposure button) -->
+            <div id="camera-exposure-bar" class="absolute right-3 top-16 bottom-32 hidden flex flex-col items-center justify-center z-20 bg-black/60 backdrop-blur-md py-3 px-2 rounded-full border border-white/20">
+              <i class="fa-solid fa-sun text-amber-300 text-xs mb-2"></i>
+              <input type="range" id="camera-exposure-slider" min="0.5" max="1.8" step="0.05" value="1.0" orient="vertical" oninput="setCameraExposure(parseFloat(this.value))" class="h-32 accent-amber-400 cursor-pointer" style="writing-mode: vertical-lr; direction: rtl;">
+              <span id="camera-exposure-text" class="text-[9px] font-mono text-white mt-1">1.0</span>
+            </div>
+
           </div>
 
           <!-- Upload Inputs Grid -->
@@ -824,10 +916,21 @@
       { key: 'generalSummary', prompt: '📝 **¿Conclusiones o indicaciones para el Administrador HSEQ / Operaciones?**' }
     ];
 
-    // Mobile Camera Stream State
+    // Mobile Smartphone Dynamic Camera State
     let mediaStream = null;
     let facingMode = 'environment';
     let torchEnabled = false;
+    let gridEnabled = false;
+    let cameraTimer = 0; // 0 = instant, 3 = 3s
+    let timerInterval = null;
+    let currentZoom = 1.0;
+    let maxHardwareZoom = 1.0;
+    let minHardwareZoom = 1.0;
+    let hasHardwareZoom = false;
+    let currentExposure = 1.0;
+    let exposureBarOpen = false;
+    let initialPinchDistance = 0;
+    let initialZoomOnPinch = 1.0;
 
     // Automatic GPS Background Watcher State
     let watchPositionId = null;
@@ -1524,34 +1627,59 @@ GENERADO EL: ${today} A LAS ${generatedTime}
       updateCanvas();
     }
 
-    /* CAMERA HARDWARE CONTROLS WITH GRACEFUL PERMISSION RECOVERY */
+    /* SMARTPHONE DYNAMIC CAMERA CONTROLS & VIEWFINDER ENGINE */
     async function startLiveCamera() {
       stopCameraStream();
 
       const video = document.getElementById('webcam-video');
       const placeholder = document.getElementById('camera-placeholder');
       const controlsBar = document.getElementById('camera-controls-bar');
+      const topBar = document.getElementById('camera-top-bar');
+      const zoomBar = document.getElementById('camera-zoom-bar');
 
       try {
         const constraints = {
           video: {
             facingMode: { ideal: facingMode },
-            width: { ideal: 1080 },
-            height: { ideal: 1920 },
-            aspectRatio: { ideal: 9 / 16 }
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
           },
           audio: false
         };
 
         mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
         video.srcObject = mediaStream;
-        
+        await video.play();
+
+        // Detect Hardware Capabilities
+        const track = mediaStream.getVideoTracks()[0];
+        const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+
+        if (capabilities.zoom) {
+          hasHardwareZoom = true;
+          minHardwareZoom = capabilities.zoom.min || 1.0;
+          maxHardwareZoom = capabilities.zoom.max || 5.0;
+          const slider = document.getElementById('camera-zoom-slider');
+          if (slider) {
+            slider.min = minHardwareZoom;
+            slider.max = Math.min(maxHardwareZoom, 5.0);
+          }
+        } else {
+          hasHardwareZoom = false;
+        }
+
         video.classList.remove('hidden');
         placeholder.classList.add('hidden');
         controlsBar.classList.remove('hidden');
+        if (topBar) topBar.classList.remove('hidden');
+        if (zoomBar) zoomBar.classList.remove('hidden');
+
+        setCameraZoom(1.0);
+        setCameraExposure(1.0);
+        setupCameraInteractions();
 
         updateCameraDiagBadge('granted');
-        showToast("Cámara de campo activada", "success");
+        showToast("Cámara activada en formato celular 9:16", "success");
       } catch (err) {
         console.warn("Camera access error:", err);
         updateCameraDiagBadge('denied');
@@ -1561,6 +1689,13 @@ GENERADO EL: ${today} A LAS ${generatedTime}
     }
 
     function stopCameraStream() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      const countdown = document.getElementById('camera-countdown');
+      if (countdown) countdown.classList.add('hidden');
+
       if (mediaStream) {
         mediaStream.getTracks().forEach(track => track.stop());
         mediaStream = null;
@@ -1568,10 +1703,28 @@ GENERADO EL: ${today} A LAS ${generatedTime}
       const video = document.getElementById('webcam-video');
       const placeholder = document.getElementById('camera-placeholder');
       const controlsBar = document.getElementById('camera-controls-bar');
+      const topBar = document.getElementById('camera-top-bar');
+      const zoomBar = document.getElementById('camera-zoom-bar');
+      const exposureBar = document.getElementById('camera-exposure-bar');
+      const grid = document.getElementById('camera-grid-overlay');
 
-      video.classList.add('hidden');
-      placeholder.classList.remove('hidden');
-      controlsBar.classList.add('hidden');
+      if (video) {
+        video.classList.add('hidden');
+        video.style.transform = 'scale(1)';
+        video.style.filter = 'none';
+      }
+      if (placeholder) placeholder.classList.remove('hidden');
+      if (controlsBar) controlsBar.classList.add('hidden');
+      if (topBar) topBar.classList.add('hidden');
+      if (zoomBar) zoomBar.classList.add('hidden');
+      if (exposureBar) exposureBar.classList.add('hidden');
+      if (grid) grid.classList.add('hidden');
+
+      torchEnabled = false;
+      const torchBtn = document.getElementById('btn-torch');
+      if (torchBtn) {
+        torchBtn.className = 'w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition text-xs';
+      }
     }
 
     async function switchCameraFacing() {
@@ -1580,7 +1733,10 @@ GENERADO EL: ${today} A LAS ${generatedTime}
     }
 
     async function toggleTorch() {
-      if (!mediaStream) return;
+      if (!mediaStream) {
+        showToast("Primero enciende la cámara", "warning");
+        return;
+      }
       const track = mediaStream.getVideoTracks()[0];
       const capabilities = track.getCapabilities ? track.getCapabilities() : {};
 
@@ -1588,12 +1744,206 @@ GENERADO EL: ${today} A LAS ${generatedTime}
         torchEnabled = !torchEnabled;
         try {
           await track.applyConstraints({ advanced: [{ torch: torchEnabled }] });
-          showToast(torchEnabled ? "Flash Activado" : "Flash Apagado", "info");
+          const btn = document.getElementById('btn-torch');
+          if (btn) {
+            btn.className = torchEnabled 
+              ? 'w-8 h-8 rounded-full bg-amber-400 text-brand-navy shadow-lg flex items-center justify-center transition text-xs'
+              : 'w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition text-xs';
+          }
+          showToast(torchEnabled ? "Linterna Activada" : "Linterna Apagada", "info");
         } catch (e) {
-          showToast("Error al activar linterna", "warning");
+          showToast("Error al controlar linterna", "warning");
         }
       } else {
         showToast("Linterna no disponible en este lente", "warning");
+      }
+    }
+
+    function toggleCameraGrid() {
+      gridEnabled = !gridEnabled;
+      const grid = document.getElementById('camera-grid-overlay');
+      const btn = document.getElementById('btn-grid');
+      if (grid) {
+        if (gridEnabled) {
+          grid.classList.remove('hidden');
+          if (btn) btn.className = 'w-8 h-8 rounded-full bg-brand-blue text-white flex items-center justify-center transition text-xs shadow-md';
+          showToast("Cuadrícula 3x3 activada", "info");
+        } else {
+          grid.classList.add('hidden');
+          if (btn) btn.className = 'w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white/80 flex items-center justify-center transition text-xs';
+          showToast("Cuadrícula desactivada", "info");
+        }
+      }
+    }
+
+    function toggleCameraTimer() {
+      cameraTimer = cameraTimer === 0 ? 3 : 0;
+      const label = document.getElementById('camera-timer-label');
+      const btn = document.getElementById('btn-timer');
+      if (label) label.innerText = `${cameraTimer}s`;
+      if (btn) {
+        btn.className = cameraTimer > 0 
+          ? 'px-2 py-1 rounded-full bg-brand-blue text-white flex items-center gap-1 transition text-[11px] font-mono font-black shadow-md'
+          : 'px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center gap-1 transition text-[11px] font-mono font-black';
+      }
+      showToast(cameraTimer > 0 ? "Temporizador de 3 segundos activado" : "Temporizador apagado", "info");
+    }
+
+    function toggleExposureSlider() {
+      exposureBarOpen = !exposureBarOpen;
+      const bar = document.getElementById('camera-exposure-bar');
+      const btn = document.getElementById('btn-exposure');
+      if (bar) {
+        if (exposureBarOpen) {
+          bar.classList.remove('hidden');
+          if (btn) btn.classList.add('bg-amber-500/40', 'border', 'border-amber-400');
+        } else {
+          bar.classList.add('hidden');
+          if (btn) btn.classList.remove('bg-amber-500/40', 'border', 'border-amber-400');
+        }
+      }
+    }
+
+    function setCameraExposure(val) {
+      currentExposure = Math.round(val * 100) / 100;
+      const text = document.getElementById('camera-exposure-text');
+      if (text) text.innerText = currentExposure.toFixed(2);
+
+      const video = document.getElementById('webcam-video');
+      if (video) {
+        video.style.filter = `brightness(${currentExposure})`;
+      }
+    }
+
+    function setCameraZoom(level) {
+      currentZoom = Math.round(level * 10) / 10;
+      currentZoom = Math.max(0.8, Math.min(5.0, currentZoom));
+
+      const zoomText = document.getElementById('camera-zoom-text');
+      if (zoomText) zoomText.innerText = `${currentZoom.toFixed(1)}x`;
+
+      const slider = document.getElementById('camera-zoom-slider');
+      if (slider) slider.value = currentZoom;
+
+      ['08', '10', '20', '30', '50'].forEach(p => {
+        const btn = document.getElementById(`btn-zoom-${p}`);
+        if (!btn) return;
+        const val = p === '08' ? 0.8 : (p === '10' ? 1.0 : (p === '20' ? 2.0 : (p === '30' ? 3.0 : 5.0)));
+        if (Math.abs(currentZoom - val) < 0.1) {
+          btn.className = 'zoom-btn px-2.5 py-1 rounded-full text-[11px] font-black font-mono bg-brand-blue text-white shadow-sm transition';
+        } else {
+          btn.className = 'zoom-btn px-2.5 py-1 rounded-full text-[11px] font-black font-mono text-white/80 hover:text-white transition';
+        }
+      });
+
+      if (mediaStream && hasHardwareZoom) {
+        const track = mediaStream.getVideoTracks()[0];
+        if (track && track.applyConstraints) {
+          const hwZoom = Math.max(minHardwareZoom, Math.min(maxHardwareZoom, currentZoom));
+          track.applyConstraints({ advanced: [{ zoom: hwZoom }] }).catch(() => {});
+        }
+      }
+
+      const video = document.getElementById('webcam-video');
+      if (video) {
+        const mirrorScale = facingMode === 'user' ? -1 : 1;
+        video.style.transform = `scale(${mirrorScale * currentZoom}, ${currentZoom})`;
+      }
+    }
+
+    function setupCameraInteractions() {
+      const container = document.getElementById('camera-stream-container');
+      if (!container || container.dataset.listenersAttached) return;
+      container.dataset.listenersAttached = 'true';
+
+      container.addEventListener('click', (e) => {
+        if (e.target.closest('#camera-controls-bar, #camera-top-bar, #camera-zoom-bar, #camera-exposure-bar')) return;
+
+        const rect = container.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        showFocusRing(x, y);
+
+        if (mediaStream) {
+          const track = mediaStream.getVideoTracks()[0];
+          if (track && track.applyConstraints) {
+            track.applyConstraints({
+              advanced: [{ focusMode: 'continuous' }]
+            }).catch(() => {});
+          }
+        }
+      });
+
+      container.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+          initialPinchDistance = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          initialZoomOnPinch = currentZoom;
+        }
+      }, { passive: true });
+
+      container.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 2 && initialPinchDistance > 0) {
+          const currentDist = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+          );
+          const factor = currentDist / initialPinchDistance;
+          setCameraZoom(initialZoomOnPinch * factor);
+        }
+      }, { passive: true });
+
+      container.addEventListener('wheel', (e) => {
+        if (!mediaStream) return;
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 0.2 : -0.2;
+        setCameraZoom(currentZoom + delta);
+      }, { passive: false });
+    }
+
+    function showFocusRing(x, y) {
+      const ring = document.getElementById('camera-focus-ring');
+      if (!ring) return;
+
+      ring.style.left = `${x}px`;
+      ring.style.top = `${y}px`;
+      ring.classList.remove('hidden');
+      ring.style.transform = 'translate(-50%, -50%) scale(1.3)';
+
+      setTimeout(() => {
+        ring.style.transform = 'translate(-50%, -50%) scale(1.0)';
+      }, 50);
+
+      clearTimeout(ring.hideTimeout);
+      ring.hideTimeout = setTimeout(() => {
+        ring.classList.add('hidden');
+      }, 1800);
+    }
+
+    function triggerShutterCapture() {
+      if (cameraTimer > 0) {
+        const countdownEl = document.getElementById('camera-countdown');
+        let remaining = cameraTimer;
+        if (countdownEl) {
+          countdownEl.innerText = remaining;
+          countdownEl.classList.remove('hidden');
+        }
+        timerInterval = setInterval(() => {
+          remaining--;
+          if (remaining > 0) {
+            if (countdownEl) countdownEl.innerText = remaining;
+          } else {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            if (countdownEl) countdownEl.classList.add('hidden');
+            captureLiveSnapshot();
+          }
+        }, 1000);
+      } else {
+        captureLiveSnapshot();
       }
     }
 
@@ -1616,11 +1966,71 @@ GENERADO EL: ${today} A LAS ${generatedTime}
       const video = document.getElementById('webcam-video');
       if (!video || video.videoWidth === 0) return;
 
+      // Shutter visual flash animation
+      const flash = document.getElementById('camera-shutter-flash');
+      if (flash) {
+        flash.classList.remove('opacity-0');
+        flash.classList.add('opacity-100');
+        setTimeout(() => {
+          flash.classList.remove('opacity-100');
+          flash.classList.add('opacity-0');
+        }, 120);
+      }
+
+      // Tactile haptic feedback
+      if (navigator.vibrate) {
+        navigator.vibrate([35, 20, 35]);
+      }
+
+      // High-Definition Vertical Smartphone Resolution 1080 x 1920 (9:16)
+      const targetWidth = 1080;
+      const targetHeight = 1920;
+      const targetRatio = targetWidth / targetHeight;
+
       const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = video.videoWidth;
-      tempCanvas.height = video.videoHeight;
+      tempCanvas.width = targetWidth;
+      tempCanvas.height = targetHeight;
       const ctx = tempCanvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+
+      const vW = video.videoWidth;
+      const vH = video.videoHeight;
+      const videoRatio = vW / vH;
+
+      let cropW, cropH, cropX, cropY;
+
+      if (videoRatio > targetRatio) {
+        // Video is wider than 9:16 -> crop lateral sides
+        cropH = vH;
+        cropW = vH * targetRatio;
+        cropX = (vW - cropW) / 2;
+        cropY = 0;
+      } else {
+        // Video is taller than 9:16 -> crop vertical top/bottom
+        cropW = vW;
+        cropH = vW / targetRatio;
+        cropX = 0;
+        cropY = (vH - cropH) / 2;
+      }
+
+      // Apply zoom factor to crop box
+      const zoom = Math.max(0.5, currentZoom);
+      const zoomedW = cropW / zoom;
+      const zoomedH = cropH / zoom;
+      const zoomedX = cropX + (cropW - zoomedW) / 2;
+      const zoomedY = cropY + (cropH - zoomedH) / 2;
+
+      // Apply brightness/exposure filter
+      if (currentExposure !== 1.0) {
+        ctx.filter = `brightness(${currentExposure})`;
+      }
+
+      // Mirror if front selfie camera
+      if (facingMode === 'user') {
+        ctx.translate(targetWidth, 0);
+        ctx.scale(-1, 1);
+      }
+
+      ctx.drawImage(video, zoomedX, zoomedY, zoomedW, zoomedH, 0, 0, targetWidth, targetHeight);
 
       inspectionImageSrc = tempCanvas.toDataURL('image/png');
       const img = document.getElementById('img-inspection-source');
@@ -1775,13 +2185,31 @@ GENERADO EL: ${today} A LAS ${generatedTime}
       if (!sourceImg || !sourceImg.complete || sourceImg.naturalWidth === 0) return;
 
       const renderWidth = 1080;
-      const renderHeight = Math.round((sourceImg.naturalHeight / sourceImg.naturalWidth) * renderWidth) || 1920;
+      const renderHeight = 1920; // True 9:16 vertical smartphone format
 
       canvas.width = renderWidth;
       canvas.height = renderHeight;
 
-      // Draw Base Photo
-      ctx.drawImage(sourceImg, 0, 0, renderWidth, renderHeight);
+      // Draw Base Photo cleanly formatted into 9:16 vertical orientation
+      const sW = sourceImg.naturalWidth;
+      const sH = sourceImg.naturalHeight;
+      const sRatio = sW / sH;
+      const targetRatio = 1080 / 1920;
+
+      if (Math.abs(sRatio - targetRatio) > 0.02) {
+        // Image from gallery or different ratio -> clean object-cover center crop to 9:16
+        if (sRatio > targetRatio) {
+          const cW = sH * targetRatio;
+          const cX = (sW - cW) / 2;
+          ctx.drawImage(sourceImg, cX, 0, cW, sH, 0, 0, renderWidth, renderHeight);
+        } else {
+          const cH = sW / targetRatio;
+          const cY = (sH - cH) / 2;
+          ctx.drawImage(sourceImg, 0, cY, sW, cH, 0, 0, renderWidth, renderHeight);
+        }
+      } else {
+        ctx.drawImage(sourceImg, 0, 0, renderWidth, renderHeight);
+      }
 
       // Dynamic Form Data with Delegación and Nombre de Cliente
       const delegacion = (document.getElementById('input-client') ? document.getElementById('input-client').value : '').trim() || 'Delegación Bogotá';
@@ -1804,15 +2232,12 @@ GENERADO EL: ${today} A LAS ${generatedTime}
 
       const catTheme = categoryConfig[currentCategory] || categoryConfig['Seguimiento Diario'];
 
-      // PROPORTIONAL BANNER (Height adjusted for vertical smartphone screen)
-      const overlayMargin = 20;
-      const isPortrait = renderHeight >= renderWidth;
-      const overlayHeight = isPortrait 
-        ? Math.min(Math.max(renderHeight * 0.20, 280), 360)
-        : Math.min(renderHeight * 0.28, 250);
+      // PROPORTIONAL BANNER (Proportionally sized for 1080x1920 vertical smartphone screen)
+      const overlayMargin = 22;
+      const overlayHeight = 310;
       const overlayY = renderHeight - overlayHeight - overlayMargin;
       const overlayWidth = renderWidth - (overlayMargin * 2);
-      const borderRadius = 20;
+      const borderRadius = 22;
 
       ctx.save();
 
