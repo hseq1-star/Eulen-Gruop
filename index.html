@@ -419,8 +419,9 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
               <label class="text-xs text-brand-navy font-bold mb-1.5 block">Servicio / Actividad Desarrollada</label>
-              <select id="input-activity" class="w-full text-xs font-bold px-3 py-2.5 rounded-xl glass-input cursor-pointer" onchange="updateCanvas()">
-                <option value="Servicios de Seguridad y Vigilancia">Servicios de Seguridad y Vigilancia</option>
+              <select id="input-activity" class="w-full text-xs font-bold px-3 py-2.5 rounded-xl glass-input cursor-pointer" onchange="handleActivityChange()">
+                <option value="Formación HSEQ">Formación HSEQ</option>
+                <option value="Servicios de Seguridad y Vigilancia" selected>Servicios de Seguridad y Vigilancia</option>
                 <option value="Facility Services / Mantenimiento Integral">Facility Services / Mantenimiento</option>
                 <option value="Servicios de Limpieza Especializada">Servicios de Limpieza Especializada</option>
                 <option value="Trabajo en Alturas (>1.50m)">Trabajo en Alturas (>1.50m)</option>
@@ -1682,6 +1683,14 @@ GENERADO EL: ${today} A LAS ${generatedTime}
       updateCanvas();
     }
 
+    function handleActivityChange() {
+      const act = document.getElementById('input-activity') ? document.getElementById('input-activity').value : '';
+      if (act === 'Formación HSEQ') {
+        selectCategory('Formación HSEQ');
+      }
+      updateCanvas();
+    }
+
     /* TYPOGRAPHY SIZE & HIGH-RESOLUTION ENGINE */
     function setStampFontSize(preset) {
       const map = {
@@ -2431,12 +2440,12 @@ GENERADO EL: ${today} A LAS ${generatedTime}
       const effectiveScale = fontScale * resMultiplier;
 
       // PROPORTIONAL BANNER (Dynamically sized so larger typography never clips)
-      const overlayMargin = Math.round(22 * resMultiplier);
+      const overlayMargin = Math.round(20 * resMultiplier);
       const overlayWidth = renderWidth - (overlayMargin * 2);
       const borderRadius = Math.round(22 * resMultiplier);
 
-      const baseOverlayHeight = Math.round(325 * resMultiplier);
-      const overlayHeight = Math.round(baseOverlayHeight * Math.max(0.85, Math.min(1.45, (fontScale - 1.0) * 0.75 + 1.0)));
+      const baseOverlayHeight = Math.round(345 * resMultiplier);
+      const overlayHeight = Math.round(baseOverlayHeight * (1 + (fontScale - 1.0) * 0.85));
       const overlayY = renderHeight - overlayHeight - overlayMargin;
 
       ctx.save();
@@ -2471,7 +2480,7 @@ GENERADO EL: ${today} A LAS ${generatedTime}
         : document.getElementById('img-logo-light');
 
       let headerTextX = overlayMargin + Math.round(18 * resMultiplier);
-      const logoTargetHeight = Math.round(48 * resMultiplier * Math.min(1.2, Math.max(0.85, fontScale)));
+      const logoTargetHeight = Math.round(48 * resMultiplier * Math.min(1.15, Math.max(0.85, fontScale)));
 
       if (eulenLogo && eulenLogo.complete && eulenLogo.naturalWidth > 0) {
         const logoAspect = eulenLogo.naturalWidth / eulenLogo.naturalHeight;
@@ -2479,24 +2488,14 @@ GENERADO EL: ${today} A LAS ${generatedTime}
         const logoY = overlayY + Math.round(14 * resMultiplier);
 
         ctx.drawImage(eulenLogo, overlayMargin + Math.round(16 * resMultiplier), logoY, logoTargetWidth, logoTargetHeight);
-        headerTextX = overlayMargin + Math.round(16 * resMultiplier) + logoTargetWidth + Math.round(16 * resMultiplier);
+        headerTextX = overlayMargin + Math.round(16 * resMultiplier) + logoTargetWidth + Math.round(14 * resMultiplier);
       }
-
-      // Header: DELEGACIÓN & NOMBRE DE CLIENTE
-      ctx.font = `800 ${Math.round(23 * effectiveScale)}px Montserrat`;
-      ctx.fillStyle = textColorPrimary;
-      ctx.textAlign = 'left';
-      ctx.fillText(delegacion.toUpperCase(), headerTextX, overlayY + Math.round(36 * effectiveScale));
-
-      ctx.font = `700 ${Math.round(14 * effectiveScale)}px Montserrat`;
-      ctx.fillStyle = textColorMuted;
-      ctx.fillText(`Cliente: ${cliente} | Supervisor: ${currentInspectorName}`, headerTextX, overlayY + Math.round(58 * effectiveScale));
 
       // CATEGORY BADGE (Compact Top Right)
       const badgeText = currentCategory.toUpperCase();
-      ctx.font = `800 ${Math.round(12.5 * effectiveScale)}px Montserrat`;
+      ctx.font = `800 ${Math.round(12 * effectiveScale)}px Montserrat`;
       const badgeWidth = ctx.measureText(badgeText).width + Math.round(24 * resMultiplier);
-      const badgeHeight = Math.round(28 * effectiveScale);
+      const badgeHeight = Math.round(27 * effectiveScale);
       const badgeX = overlayMargin + overlayWidth - badgeWidth - Math.round(16 * resMultiplier);
       const badgeY = overlayY + Math.round(14 * resMultiplier);
 
@@ -2505,7 +2504,19 @@ GENERADO EL: ${today} A LAS ${generatedTime}
 
       ctx.fillStyle = '#FFFFFF';
       ctx.textAlign = 'center';
-      ctx.fillText(badgeText, badgeX + (badgeWidth / 2), badgeY + Math.round(19 * effectiveScale));
+      ctx.fillText(badgeText, badgeX + (badgeWidth / 2), badgeY + Math.round(18 * effectiveScale));
+
+      // Header: DELEGACIÓN & CLIENTE (Bounded so text never collides with category badge)
+      const maxHeaderTitleWidth = badgeX - headerTextX - Math.round(12 * resMultiplier);
+      ctx.font = `800 ${Math.round(22 * effectiveScale)}px Montserrat`;
+      ctx.fillStyle = textColorPrimary;
+      ctx.textAlign = 'left';
+      ctx.fillText(fitText(ctx, delegacion.toUpperCase(), maxHeaderTitleWidth), headerTextX, overlayY + Math.round(35 * effectiveScale));
+
+      ctx.font = `700 ${Math.round(13.5 * effectiveScale)}px Montserrat`;
+      ctx.fillStyle = textColorMuted;
+      const subtitleText = `Cliente: ${cliente} | Supervisor: ${currentInspectorName}`;
+      ctx.fillText(fitText(ctx, subtitleText, maxHeaderTitleWidth), headerTextX, overlayY + Math.round(57 * effectiveScale));
 
       // Subtle Divider Line
       const dividerY = overlayY + Math.max(logoTargetHeight + Math.round(18 * resMultiplier), Math.round(72 * effectiveScale));
@@ -2515,74 +2526,92 @@ GENERADO EL: ${today} A LAS ${generatedTime}
       ctx.lineTo(overlayMargin + overlayWidth - Math.round(16 * resMultiplier), dividerY);
       ctx.stroke();
 
-      // TWO COLUMN STREAMLINED CONTENT LAYOUT
-      const colGap = Math.round(24 * resMultiplier);
-      const colWidth = (overlayWidth - Math.round(32 * resMultiplier) - colGap) / 2;
-      const leftColX = overlayMargin + Math.round(16 * resMultiplier);
+      // TWO COLUMN STRUCTURED GRID WITH ZERO CROSSOVER RISK
+      const colGap = Math.round(28 * resMultiplier);
+      const colPadding = Math.round(16 * resMultiplier);
+      const availableInnerWidth = overlayWidth - (colPadding * 2) - colGap;
+      const colWidth = Math.floor(availableInnerWidth / 2);
+      const leftColX = overlayMargin + colPadding;
       const rightColX = leftColX + colWidth + colGap;
-      const contentY = dividerY + Math.round(22 * effectiveScale);
+      const contentY = dividerY + Math.round(18 * effectiveScale);
 
-      // Left Column: Activity & Field Observation
-      ctx.font = `800 ${Math.round(12.5 * effectiveScale)}px Montserrat`;
+      const watermarkY = overlayY + overlayHeight - Math.round(13 * resMultiplier);
+
+      // Subtle Vertical Divider between Left (Findings) & Right (Traceability)
+      const dividerX = leftColX + colWidth + Math.round(colGap / 2);
+      ctx.strokeStyle = style === 'dark' ? 'rgba(255, 255, 255, 0.14)' : 'rgba(0, 38, 100, 0.14)';
+      ctx.lineWidth = Math.round(1.5 * resMultiplier);
+      ctx.beginPath();
+      ctx.moveTo(dividerX, contentY - Math.round(4 * resMultiplier));
+      ctx.lineTo(dividerX, watermarkY - Math.round(12 * resMultiplier));
+      ctx.stroke();
+
+      // LEFT COLUMN - BLOCK 1: SERVICIO / ACTIVIDAD (Stacked for zero lateral spill)
+      ctx.font = `800 ${Math.round(11.5 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = textColorSecondary;
       ctx.textAlign = 'left';
       ctx.fillText("SERVICIO / ACTIVIDAD:", leftColX, contentY);
 
-      const actLabelW = ctx.measureText("SERVICIO / ACTIVIDAD: ").width;
-      ctx.font = `700 ${Math.round(14.5 * effectiveScale)}px Montserrat`;
+      const actValY = contentY + Math.round(18 * effectiveScale);
+      ctx.font = `700 ${Math.round(14 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = textColorPrimary;
-      ctx.fillText(activity, leftColX + actLabelW, contentY);
+      ctx.fillText(fitText(ctx, activity, colWidth), leftColX, actValY);
 
-      const hallazgoLabelY = contentY + Math.round(26 * effectiveScale);
-      ctx.font = `800 ${Math.round(12.5 * effectiveScale)}px Montserrat`;
+      // LEFT COLUMN - BLOCK 2: HALLAZGO HSEQ (Bounded wrap text)
+      const hallazgoLabelY = actValY + Math.round(24 * effectiveScale);
+      ctx.font = `800 ${Math.round(11.5 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = textColorSecondary;
       ctx.fillText("HALLAZGO HSEQ:", leftColX, hallazgoLabelY);
 
-      ctx.font = `600 ${Math.round(14 * effectiveScale)}px Montserrat`;
-      ctx.fillStyle = textColorMuted;
-      const descLineHeight = Math.round(20 * effectiveScale);
       const descStartY = hallazgoLabelY + Math.round(18 * effectiveScale);
-      wrapText(ctx, description, leftColX, descStartY, colWidth, descLineHeight, 4);
+      ctx.font = `600 ${Math.round(13.5 * effectiveScale)}px Montserrat`;
+      ctx.fillStyle = textColorMuted;
+      const descLineHeight = Math.round(19 * effectiveScale);
+      const maxDescLines = Math.max(2, Math.floor((watermarkY - descStartY - Math.round(10 * resMultiplier)) / descLineHeight));
+      wrapText(ctx, description, leftColX, descStartY, colWidth, descLineHeight, maxDescLines);
 
-      // Right Column: Date, Coords & Weather
-      ctx.font = `800 ${Math.round(12.5 * effectiveScale)}px Montserrat`;
+      // RIGHT COLUMN - BLOCK 1: FECHA / HORA
+      ctx.font = `800 ${Math.round(11.5 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = textColorSecondary;
+      ctx.textAlign = 'left';
       ctx.fillText("FECHA / HORA:", rightColX, contentY);
 
-      const dateLabelW = ctx.measureText("FECHA / HORA: ").width;
-      ctx.font = `700 ${Math.round(14.5 * effectiveScale)}px Montserrat`;
+      const dateValY = contentY + Math.round(18 * effectiveScale);
+      ctx.font = `700 ${Math.round(14 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = textColorPrimary;
-      ctx.fillText(`${dateStr} ${timeStr}`, rightColX + dateLabelW, contentY);
+      ctx.fillText(fitText(ctx, `${dateStr} • ${timeStr}`, colWidth), rightColX, dateValY);
 
-      const gpsLabelY = contentY + Math.round(26 * effectiveScale);
-      ctx.font = `800 ${Math.round(12.5 * effectiveScale)}px Montserrat`;
+      // RIGHT COLUMN - BLOCK 2: UBICACIÓN GPS (Aligned with Hallazgo label)
+      const gpsLabelY = actValY + Math.round(24 * effectiveScale);
+      ctx.font = `800 ${Math.round(11.5 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = textColorSecondary;
       ctx.fillText("UBICACIÓN GPS:", rightColX, gpsLabelY);
 
-      const coordsY = gpsLabelY + Math.round(18 * effectiveScale);
+      const gpsValY = gpsLabelY + Math.round(18 * effectiveScale);
       if (hasGPSFix) {
-        ctx.font = `700 ${Math.round(13.5 * effectiveScale)}px Montserrat`;
+        ctx.font = `700 ${Math.round(13 * effectiveScale)}px Montserrat`;
         ctx.fillStyle = textColorPrimary;
-        ctx.fillText(`${coords} (±${latestAccuracy}m)`, rightColX, coordsY);
+        ctx.fillText(fitText(ctx, `${coords} (±${latestAccuracy}m)`, colWidth), rightColX, gpsValY);
       } else {
-        ctx.font = `800 ${Math.round(12.5 * effectiveScale)}px Montserrat`;
+        ctx.font = `800 ${Math.round(11.5 * effectiveScale)}px Montserrat`;
         ctx.fillStyle = '#f5333f';
-        ctx.fillText("⚠️ NO VERIFICADA (GPS INACTIVO)", rightColX, coordsY);
+        ctx.fillText(fitText(ctx, "⚠️ NO VERIFICADA (GPS INACTIVO)", colWidth), rightColX, gpsValY);
       }
 
-      const weatherY = coordsY + Math.round(24 * effectiveScale);
-      ctx.font = `800 ${Math.round(12.5 * effectiveScale)}px Montserrat`;
+      // RIGHT COLUMN - BLOCK 3: CLIMA & ZONA (Stacked and bounded to stay inside right border)
+      const weatherLabelY = gpsValY + Math.round(22 * effectiveScale);
+      ctx.font = `800 ${Math.round(11.5 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = textColorSecondary;
-      ctx.fillText("CLIMA & ZONA:", rightColX, weatherY);
+      ctx.fillText("CLIMA & ZONA:", rightColX, weatherLabelY);
 
-      const weatherLabelW = ctx.measureText("CLIMA & ZONA: ").width;
-      ctx.font = `700 ${Math.round(13.5 * effectiveScale)}px Montserrat`;
+      const weatherValY = weatherLabelY + Math.round(18 * effectiveScale);
+      ctx.font = `700 ${Math.round(13 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = textColorPrimary;
-      ctx.fillText(`${weather} | ${city}`, rightColX + weatherLabelW, weatherY);
+      const weatherCityText = `${weather} • ${city}`;
+      ctx.fillText(fitText(ctx, weatherCityText, colWidth), rightColX, weatherValY);
 
-      // Watermark Verification Tag
-      const watermarkY = overlayY + overlayHeight - Math.round(12 * resMultiplier);
-      ctx.font = `700 ${Math.round(11 * effectiveScale)}px Montserrat`;
+      // Watermark Verification Tag (Guaranteed bounded within card width)
+      ctx.font = `700 ${Math.round(10.5 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = hasGPSFix 
         ? (style === 'dark' ? 'rgba(232, 230, 223, 0.75)' : 'rgba(0, 38, 100, 0.75)')
         : '#f5333f';
@@ -2590,9 +2619,22 @@ GENERADO EL: ${today} A LAS ${generatedTime}
       const watermarkTag = hasGPSFix
         ? "SISTEMA HSEQ FIELD PRO - GRUPO EULEN COLOMBIA - REGISTRO AUDITADO Y GEORREFERENCIADO"
         : "SISTEMA HSEQ FIELD PRO - GRUPO EULEN COLOMBIA - ⚠️ REGISTRO SIN GEORREFERENCIACIÓN SATELITAL";
-      ctx.fillText(watermarkTag, overlayMargin + overlayWidth - Math.round(16 * resMultiplier), watermarkY);
+      ctx.fillText(fitText(ctx, watermarkTag, overlayWidth - Math.round(32 * resMultiplier)), overlayMargin + overlayWidth - Math.round(16 * resMultiplier), watermarkY);
 
       ctx.restore();
+    }
+
+    function fitText(ctx, text, maxWidth) {
+      if (!text) return '';
+      if (ctx.measureText(text).width <= maxWidth) return text;
+      let truncated = text;
+      const ellipsis = '...';
+      const ellipsisWidth = ctx.measureText(ellipsis).width;
+      if (ellipsisWidth >= maxWidth) return '';
+      while (truncated.length > 0 && (ctx.measureText(truncated).width + ellipsisWidth) > maxWidth) {
+        truncated = truncated.slice(0, -1);
+      }
+      return truncated.trim() + ellipsis;
     }
 
     function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
@@ -2629,17 +2671,19 @@ GENERADO EL: ${today} A LAS ${generatedTime}
         if (testWidth > maxWidth && n > 0) {
           lineCount++;
           if (lineCount >= maxLines) {
-            ctx.fillText(line.trim() + '...', x, currentY);
+            ctx.fillText(fitText(ctx, line.trim(), maxWidth), x, currentY);
             return;
           }
-          ctx.fillText(line, x, currentY);
+          ctx.fillText(fitText(ctx, line.trim(), maxWidth), x, currentY);
           line = words[n] + ' ';
           currentY += lineHeight;
         } else {
           line = testLine;
         }
       }
-      ctx.fillText(line, x, currentY);
+      if (line.trim().length > 0) {
+        ctx.fillText(fitText(ctx, line.trim(), maxWidth), x, currentY);
+      }
     }
 
     function downloadStampImage() {
