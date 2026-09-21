@@ -465,9 +465,46 @@
             <textarea id="input-description" rows="3" class="w-full text-xs font-semibold px-3.5 py-2.5 rounded-xl glass-input resize-none" oninput="updateCanvas()" placeholder="Describe el hallazgo o condición evidenciada...">Personal de Grupo Eulen cuenta con dotación, EPP completo y análisis de trabajo seguro ATS verificado en sitio.</textarea>
           </div>
 
-          <!-- Overlay Style Toggle & Opacity Slider -->
-          <div class="pt-3 border-t border-slate-200/80 space-y-3">
-            <div class="flex items-center justify-between">
+          <!-- Overlay Style, Typography Size & Opacity Controls -->
+          <div class="pt-3.5 border-t border-slate-200/80 space-y-3.5">
+            <!-- Typography Size Control for Stamp -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-xs text-brand-navy font-bold flex items-center gap-1.5">
+                  <i class="fa-solid fa-text-height text-brand-blue"></i> Tamaño de Letra de la Estampilla:
+                </label>
+                <span id="label-font-size-indicator" class="text-[11px] font-mono font-black text-brand-blue bg-brand-blue/10 px-2.5 py-0.5 rounded-full border border-brand-blue/20">Normal (100%)</span>
+              </div>
+              
+              <!-- 4 Size Presets -->
+              <div class="grid grid-cols-4 gap-2 mb-2">
+                <button type="button" onclick="setStampFontSize('compact')" id="btn-font-compact" title="Letra compacta para textos largos" class="font-size-btn py-2 px-1 text-center rounded-xl border border-slate-200 text-slate-600 text-xs font-bold transition hover:border-brand-blue flex flex-col items-center">
+                  <span class="text-xs">Compacta</span>
+                  <span class="text-[10px] text-slate-400 font-mono">85%</span>
+                </button>
+                <button type="button" onclick="setStampFontSize('normal')" id="btn-font-normal" title="Tamaño estándar recomendado" class="font-size-btn py-2 px-1 text-center rounded-xl border-2 border-brand-blue bg-brand-blue/10 text-brand-navy text-xs font-black transition flex flex-col items-center shadow-sm">
+                  <span class="text-xs">Normal</span>
+                  <span class="text-[10px] text-brand-blue font-mono font-black">100%</span>
+                </button>
+                <button type="button" onclick="setStampFontSize('large')" id="btn-font-large" title="Letra grande para alta visibilidad" class="font-size-btn py-2 px-1 text-center rounded-xl border border-slate-200 text-slate-600 text-xs font-bold transition hover:border-brand-blue flex flex-col items-center">
+                  <span class="text-xs">Grande</span>
+                  <span class="text-[10px] text-slate-400 font-mono">120%</span>
+                </button>
+                <button type="button" onclick="setStampFontSize('extralarge')" id="btn-font-extralarge" title="Letra extra grande para máxima legibilidad" class="font-size-btn py-2 px-1 text-center rounded-xl border border-slate-200 text-slate-600 text-xs font-bold transition hover:border-brand-blue flex flex-col items-center">
+                  <span class="text-xs">Extra</span>
+                  <span class="text-[10px] text-slate-400 font-mono">140%</span>
+                </button>
+              </div>
+
+              <!-- Fine-tune Scale Slider -->
+              <div class="flex items-center gap-2 px-1">
+                <span class="text-[10px] text-slate-400 font-bold font-mono whitespace-nowrap">Ajuste fino:</span>
+                <input type="range" id="input-stamp-font-scale" min="0.80" max="1.50" step="0.05" value="1.00" oninput="handleFontSliderInput(event)" class="w-full accent-brand-blue cursor-pointer h-1.5 bg-slate-200 rounded-lg">
+              </div>
+            </div>
+
+            <!-- Overlay Color Style -->
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
               <span class="text-xs text-brand-navy font-bold">Estilo del Vidrio Overlay</span>
               <div class="flex items-center gap-4">
                 <label class="text-[11px] text-brand-navy font-bold flex items-center gap-1.5 cursor-pointer">
@@ -479,6 +516,7 @@
               </div>
             </div>
 
+            <!-- Opacity Slider -->
             <div class="flex items-center justify-between gap-3">
               <label for="input-overlay-opacity" class="text-xs text-brand-navy font-bold whitespace-nowrap">Opacidad / Transparencia:</label>
               <input type="range" id="input-overlay-opacity" min="0.30" max="0.95" step="0.05" value="0.82" oninput="updateCanvas()" class="w-full accent-brand-blue cursor-pointer">
@@ -492,11 +530,19 @@
       <section class="lg:col-span-7 flex flex-col items-center">
         <div class="sticky top-20 w-full bg-white p-5 md:p-6 rounded-2xl border border-brand-navy/15 shadow-md flex flex-col items-center">
           
-          <div class="w-full flex items-center justify-between mb-3.5">
+          <div class="w-full flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3.5">
             <h2 class="text-sm font-black text-brand-navy flex items-center gap-2">
               <i class="fa-solid fa-eye text-brand-blue text-base"></i> Vista Previa de Estampa Fotográfica
             </h2>
-            <span class="text-[10px] text-brand-navy/70 font-mono font-bold bg-brand-cream px-2.5 py-1 rounded-lg border border-brand-navy/15">Eulen Canvas 1080p HD</span>
+            <!-- Resolution Selector Pills -->
+            <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
+              <button type="button" id="btn-res-1080" onclick="setResolution('1080p')" title="Full HD 1080x1920 (Alta velocidad y fidelidad)" class="px-2.5 py-1 rounded-lg text-[11px] font-black bg-brand-blue text-white shadow-sm transition">
+                1080p FHD
+              </button>
+              <button type="button" id="btn-res-2k" onclick="setResolution('2k')" title="2K Ultra HD 1440x2560 (Máxima nitidez y densidad de píxeles)" class="px-2.5 py-1 rounded-lg text-[11px] font-black text-slate-600 hover:text-brand-navy transition">
+                2K Ultra HD
+              </button>
+            </div>
           </div>
 
           <!-- Hidden Image Loaders for Logo and Inspection Photo -->
@@ -510,15 +556,20 @@
             <canvas id="hseq-canvas" class="w-full h-full object-contain rounded-2xl"></canvas>
           </div>
 
-          <!-- Action Download Button -->
-          <div class="w-full mt-5">
+          <!-- Action Download Button & Quality Indicators -->
+          <div class="w-full mt-5 space-y-2.5">
             <button onclick="downloadStampImage()" class="w-full py-4 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm shadow-md transition flex items-center justify-center gap-2">
               <i class="fa-solid fa-download text-lg"></i> Descargar Foto Estampada con Logo Eulen
             </button>
+            <div class="flex items-center justify-center gap-3 text-[11px] font-bold text-slate-500">
+              <span id="download-quality-label"><i class="fa-solid fa-circle-check text-emerald-600"></i> Calidad Full HD 1080p (Sin Compresión)</span>
+              <span>•</span>
+              <span><i class="fa-solid fa-mobile-screen text-brand-blue"></i> Formato Celular 9:16</span>
+            </div>
           </div>
 
-          <p class="text-[11px] text-brand-navy/80 text-center mt-3.5 font-semibold">
-            <i class="fa-solid fa-shield-halved text-brand-red mr-1"></i> El banner compacto preserva el área central de la fotografía para evidenciar la inspección con rigor técnico.
+          <p class="text-[11px] text-brand-navy/80 text-center mt-3 font-semibold">
+            <i class="fa-solid fa-shield-halved text-brand-red mr-1"></i> La estampa fotográfica cuenta con renderizado suavizado de alta definición y trazabilidad HSEQ verificable.
           </p>
 
         </div>
@@ -931,6 +982,10 @@
     let exposureBarOpen = false;
     let initialPinchDistance = 0;
     let initialZoomOnPinch = 1.0;
+
+    // High-Resolution & Stamp Typography Controls
+    let stampFontScale = 1.0; // 0.85 = compact, 1.0 = normal, 1.2 = large, 1.4 = extralarge
+    let currentResolution = '1080p'; // '1080p' (1080x1920) or '2k' (1440x2560)
 
     // Automatic GPS Background Watcher State
     let watchPositionId = null;
@@ -1627,6 +1682,84 @@ GENERADO EL: ${today} A LAS ${generatedTime}
       updateCanvas();
     }
 
+    /* TYPOGRAPHY SIZE & HIGH-RESOLUTION ENGINE */
+    function setStampFontSize(preset) {
+      const map = {
+        compact: 0.85,
+        normal: 1.00,
+        large: 1.20,
+        extralarge: 1.40
+      };
+      const val = map[preset] || 1.00;
+      applyStampFontScale(val, preset);
+    }
+
+    function handleFontSliderInput(e) {
+      const val = parseFloat(e.target.value);
+      applyStampFontScale(val, null);
+    }
+
+    function applyStampFontScale(scale, activePreset) {
+      stampFontScale = Math.round(scale * 100) / 100;
+      
+      const slider = document.getElementById('input-stamp-font-scale');
+      if (slider) slider.value = stampFontScale;
+
+      const indicator = document.getElementById('label-font-size-indicator');
+      if (indicator) {
+        const percent = Math.round(stampFontScale * 100);
+        let tag = 'Normal';
+        if (stampFontScale <= 0.88) tag = 'Compacta';
+        else if (stampFontScale > 1.08 && stampFontScale <= 1.28) tag = 'Grande';
+        else if (stampFontScale > 1.28) tag = 'Extra Grande';
+        indicator.innerText = `${tag} (${percent}%)`;
+      }
+
+      // Update button styling states
+      ['compact', 'normal', 'large', 'extralarge'].forEach(key => {
+        const btn = document.getElementById(`btn-font-${key}`);
+        if (!btn) return;
+        const isTarget = activePreset ? activePreset === key : (
+          (key === 'compact' && stampFontScale <= 0.88) ||
+          (key === 'normal' && stampFontScale > 0.88 && stampFontScale <= 1.08) ||
+          (key === 'large' && stampFontScale > 1.08 && stampFontScale <= 1.28) ||
+          (key === 'extralarge' && stampFontScale > 1.28)
+        );
+        if (isTarget) {
+          btn.className = 'font-size-btn py-2 px-1 text-center rounded-xl border-2 border-brand-blue bg-brand-blue/10 text-brand-navy text-xs font-black transition flex flex-col items-center shadow-sm';
+          const sub = btn.querySelector('span:last-child');
+          if (sub) sub.className = 'text-[10px] text-brand-blue font-mono font-black';
+        } else {
+          btn.className = 'font-size-btn py-2 px-1 text-center rounded-xl border border-slate-200 text-slate-600 text-xs font-bold transition hover:border-brand-blue flex flex-col items-center';
+          const sub = btn.querySelector('span:last-child');
+          if (sub) sub.className = 'text-[10px] text-slate-400 font-mono';
+        }
+      });
+
+      updateCanvas();
+    }
+
+    function setResolution(res) {
+      currentResolution = res;
+      const btn1080 = document.getElementById('btn-res-1080');
+      const btn2k = document.getElementById('btn-res-2k');
+      const downloadLabel = document.getElementById('download-quality-label');
+
+      if (res === '2k') {
+        if (btn2k) btn2k.className = 'px-2.5 py-1 rounded-lg text-[11px] font-black bg-brand-blue text-white shadow-sm transition';
+        if (btn1080) btn1080.className = 'px-2.5 py-1 rounded-lg text-[11px] font-black text-slate-600 hover:text-brand-navy transition';
+        if (downloadLabel) downloadLabel.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600"></i> Calidad Ultra HD 2K (1440x2560 Máxima Nitidez)';
+        showToast("Resolución cambiada a 2K Ultra HD (1440×2560)", "info");
+      } else {
+        if (btn1080) btn1080.className = 'px-2.5 py-1 rounded-lg text-[11px] font-black bg-brand-blue text-white shadow-sm transition';
+        if (btn2k) btn2k.className = 'px-2.5 py-1 rounded-lg text-[11px] font-black text-slate-600 hover:text-brand-navy transition';
+        if (downloadLabel) downloadLabel.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600"></i> Calidad Full HD 1080p (Sin Compresión)';
+        showToast("Resolución cambiada a 1080p Full HD", "info");
+      }
+
+      updateCanvas();
+    }
+
     /* SMARTPHONE DYNAMIC CAMERA CONTROLS & VIEWFINDER ENGINE */
     async function startLiveCamera() {
       stopCameraStream();
@@ -1638,16 +1771,32 @@ GENERADO EL: ${today} A LAS ${generatedTime}
       const zoomBar = document.getElementById('camera-zoom-bar');
 
       try {
-        const constraints = {
+        // Request highest available sensor resolution with automatic fallback
+        let constraints = {
           video: {
             facingMode: { ideal: facingMode },
-            width: { ideal: 1920 },
-            height: { ideal: 1080 }
+            width: { ideal: 3840, min: 1280 },
+            height: { ideal: 2160, min: 720 },
+            frameRate: { ideal: 30 }
           },
           audio: false
         };
 
-        mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+        try {
+          mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+        } catch (eHigh) {
+          console.info("Falling back to standard HD constraints:", eHigh);
+          constraints = {
+            video: {
+              facingMode: { ideal: facingMode },
+              width: { ideal: 1920 },
+              height: { ideal: 1080 }
+            },
+            audio: false
+          };
+          mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+        }
+
         video.srcObject = mediaStream;
         await video.play();
 
@@ -1962,7 +2111,7 @@ GENERADO EL: ${today} A LAS ${generatedTime}
       executeCaptureSnapshot();
     }
 
-    function executeCaptureSnapshot() {
+    async function executeCaptureSnapshot() {
       const video = document.getElementById('webcam-video');
       if (!video || video.videoWidth === 0) return;
 
@@ -1982,34 +2131,63 @@ GENERADO EL: ${today} A LAS ${generatedTime}
         navigator.vibrate([35, 20, 35]);
       }
 
-      // High-Definition Vertical Smartphone Resolution 1080 x 1920 (9:16)
-      const targetWidth = 1080;
-      const targetHeight = 1920;
+      // High-Definition Target Resolution (1080p FHD or 2K Ultra HD)
+      const targetWidth = currentResolution === '2k' ? 1440 : 1080;
+      const targetHeight = currentResolution === '2k' ? 2560 : 1920;
       const targetRatio = targetWidth / targetHeight;
 
       const tempCanvas = document.createElement('canvas');
       tempCanvas.width = targetWidth;
       tempCanvas.height = targetHeight;
       const ctx = tempCanvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
 
-      const vW = video.videoWidth;
-      const vH = video.videoHeight;
-      const videoRatio = vW / vH;
+      let sourceElement = video;
+      let sW = video.videoWidth;
+      let sH = video.videoHeight;
+      let objectUrlToRevoke = null;
 
+      // Check if ImageCapture hardware photo capture is supported for native multi-megapixel clarity
+      if (window.ImageCapture && mediaStream) {
+        try {
+          const track = mediaStream.getVideoTracks()[0];
+          if (track && track.readyState === 'live') {
+            const imageCapture = new ImageCapture(track);
+            const photoBlob = await imageCapture.takePhoto().catch(e => null);
+            if (photoBlob) {
+              const photoImg = await new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                objectUrlToRevoke = URL.createObjectURL(photoBlob);
+                img.src = objectUrlToRevoke;
+              });
+              sourceElement = photoImg;
+              sW = photoImg.naturalWidth;
+              sH = photoImg.naturalHeight;
+            }
+          }
+        } catch (captureErr) {
+          console.info("Hardware ImageCapture not used, falling back to stream frame:", captureErr);
+        }
+      }
+
+      const sRatio = sW / sH;
       let cropW, cropH, cropX, cropY;
 
-      if (videoRatio > targetRatio) {
-        // Video is wider than 9:16 -> crop lateral sides
-        cropH = vH;
-        cropW = vH * targetRatio;
-        cropX = (vW - cropW) / 2;
+      if (sRatio > targetRatio) {
+        // Video/Photo is wider than 9:16 -> crop lateral sides
+        cropH = sH;
+        cropW = sH * targetRatio;
+        cropX = (sW - cropW) / 2;
         cropY = 0;
       } else {
-        // Video is taller than 9:16 -> crop vertical top/bottom
-        cropW = vW;
-        cropH = vW / targetRatio;
+        // Video/Photo is taller than 9:16 -> crop vertical top/bottom
+        cropW = sW;
+        cropH = sW / targetRatio;
         cropX = 0;
-        cropY = (vH - cropH) / 2;
+        cropY = (sH - cropH) / 2;
       }
 
       // Apply zoom factor to crop box
@@ -2030,7 +2208,11 @@ GENERADO EL: ${today} A LAS ${generatedTime}
         ctx.scale(-1, 1);
       }
 
-      ctx.drawImage(video, zoomedX, zoomedY, zoomedW, zoomedH, 0, 0, targetWidth, targetHeight);
+      ctx.drawImage(sourceElement, zoomedX, zoomedY, zoomedW, zoomedH, 0, 0, targetWidth, targetHeight);
+
+      if (objectUrlToRevoke) {
+        URL.revokeObjectURL(objectUrlToRevoke);
+      }
 
       inspectionImageSrc = tempCanvas.toDataURL('image/png');
       const img = document.getElementById('img-inspection-source');
@@ -2039,7 +2221,8 @@ GENERADO EL: ${today} A LAS ${generatedTime}
 
       stopCameraStream();
       closeGPSWarningModal();
-      showToast(hasGPSFix ? "Foto capturada y georreferenciada con éxito" : "Foto capturada (Sin georreferenciación satelital)", hasGPSFix ? "success" : "warning");
+      const resText = currentResolution === '2k' ? '2K Ultra HD' : 'Full HD 1080p';
+      showToast(hasGPSFix ? `Foto capturada en ${resText} con georreferenciación satelital` : `Foto capturada en ${resText} (Sin señal GPS)`, hasGPSFix ? "success" : "warning");
     }
 
     function openGPSWarningModal() {
@@ -2134,41 +2317,47 @@ GENERADO EL: ${today} A LAS ${generatedTime}
     }
 
     function generateDefaultPlaceholderImage() {
+      const targetWidth = currentResolution === '2k' ? 1440 : 1080;
+      const targetHeight = currentResolution === '2k' ? 2560 : 1920;
       const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = 1080;
-      tempCanvas.height = 1920;
+      tempCanvas.width = targetWidth;
+      tempCanvas.height = targetHeight;
       const ctx = tempCanvas.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
 
-      const bgGrad = ctx.createLinearGradient(0, 0, 1080, 1920);
+      const resScale = targetWidth / 1080;
+
+      const bgGrad = ctx.createLinearGradient(0, 0, targetWidth, targetHeight);
       bgGrad.addColorStop(0, '#002664');
       bgGrad.addColorStop(0.5, '#011538');
       bgGrad.addColorStop(1, '#001a45');
       ctx.fillStyle = bgGrad;
-      ctx.fillRect(0, 0, 1080, 1920);
+      ctx.fillRect(0, 0, targetWidth, targetHeight);
 
       // Grid guides for smartphone camera viewfinder
       ctx.strokeStyle = 'rgba(0, 169, 224, 0.2)';
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 1.5 * resScale;
       ctx.beginPath();
-      ctx.moveTo(360, 0); ctx.lineTo(360, 1920);
-      ctx.moveTo(720, 0); ctx.lineTo(720, 1920);
-      ctx.moveTo(0, 640); ctx.lineTo(1080, 640);
-      ctx.moveTo(0, 1280); ctx.lineTo(1080, 1280);
+      ctx.moveTo(360 * resScale, 0); ctx.lineTo(360 * resScale, targetHeight);
+      ctx.moveTo(720 * resScale, 0); ctx.lineTo(720 * resScale, targetHeight);
+      ctx.moveTo(0, 640 * resScale); ctx.lineTo(targetWidth, 640 * resScale);
+      ctx.moveTo(0, 1280 * resScale); ctx.lineTo(targetWidth, 1280 * resScale);
       ctx.stroke();
 
-      ctx.font = '900 44px Montserrat';
+      ctx.font = `900 ${Math.round(44 * resScale)}px Montserrat`;
       ctx.fillStyle = '#00a9e0';
       ctx.textAlign = 'center';
-      ctx.fillText("📷 CÁMARA DE INSPECCIÓN HSEQ", 540, 880);
+      ctx.fillText("📷 CÁMARA DE INSPECCIÓN HSEQ", targetWidth / 2, 880 * resScale);
 
-      ctx.font = '800 32px Montserrat';
+      ctx.font = `800 ${Math.round(32 * resScale)}px Montserrat`;
       ctx.fillStyle = '#FFFFFF';
-      ctx.fillText("GRUPO EULEN COLOMBIA", 540, 940);
+      ctx.fillText("GRUPO EULEN COLOMBIA", targetWidth / 2, 940 * resScale);
 
-      ctx.font = '600 22px Montserrat';
+      ctx.font = `600 ${Math.round(22 * resScale)}px Montserrat`;
       ctx.fillStyle = '#e8e6df';
-      ctx.fillText("Formato Vertical 9:16 Pantalla Celular", 540, 1000);
-      ctx.fillText("Presiona 'Abrir Cámara' para iniciar", 540, 1045);
+      ctx.fillText("Formato Vertical 9:16 Pantalla Celular", targetWidth / 2, 1000 * resScale);
+      ctx.fillText("Presiona 'Abrir Cámara' para iniciar", targetWidth / 2, 1045 * resScale);
 
       inspectionImageSrc = tempCanvas.toDataURL('image/png');
       const img = document.getElementById('img-inspection-source');
@@ -2176,7 +2365,7 @@ GENERADO EL: ${today} A LAS ${generatedTime}
       img.src = inspectionImageSrc;
     }
 
-    /* SUBTLE & PROPORTIONAL CANVAS STAMP OVERLAY RENDERER (SMARTPHONE 9:16 ORIENTATION) */
+    /* HIGH DEFINITION CANVAS STAMP OVERLAY RENDERER (SMARTPHONE 9:16 - 1080p / 2K) */
     function updateCanvas() {
       const canvas = document.getElementById('hseq-canvas');
       const ctx = canvas.getContext('2d');
@@ -2184,17 +2373,21 @@ GENERADO EL: ${today} A LAS ${generatedTime}
 
       if (!sourceImg || !sourceImg.complete || sourceImg.naturalWidth === 0) return;
 
-      const renderWidth = 1080;
-      const renderHeight = 1920; // True 9:16 vertical smartphone format
+      const renderWidth = currentResolution === '2k' ? 1440 : 1080;
+      const renderHeight = currentResolution === '2k' ? 2560 : 1920;
 
       canvas.width = renderWidth;
       canvas.height = renderHeight;
+
+      // Enable High-Definition Bicubic Image Smoothing
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
 
       // Draw Base Photo cleanly formatted into 9:16 vertical orientation
       const sW = sourceImg.naturalWidth;
       const sH = sourceImg.naturalHeight;
       const sRatio = sW / sH;
-      const targetRatio = 1080 / 1920;
+      const targetRatio = renderWidth / renderHeight;
 
       if (Math.abs(sRatio - targetRatio) > 0.02) {
         // Image from gallery or different ratio -> clean object-cover center crop to 9:16
@@ -2232,34 +2425,41 @@ GENERADO EL: ${today} A LAS ${generatedTime}
 
       const catTheme = categoryConfig[currentCategory] || categoryConfig['Seguimiento Diario'];
 
-      // PROPORTIONAL BANNER (Proportionally sized for 1080x1920 vertical smartphone screen)
-      const overlayMargin = 22;
-      const overlayHeight = 310;
-      const overlayY = renderHeight - overlayHeight - overlayMargin;
+      // Scale factors for resolution and user selected typography
+      const resMultiplier = renderWidth / 1080;
+      const fontScale = stampFontScale;
+      const effectiveScale = fontScale * resMultiplier;
+
+      // PROPORTIONAL BANNER (Dynamically sized so larger typography never clips)
+      const overlayMargin = Math.round(22 * resMultiplier);
       const overlayWidth = renderWidth - (overlayMargin * 2);
-      const borderRadius = 22;
+      const borderRadius = Math.round(22 * resMultiplier);
+
+      const baseOverlayHeight = Math.round(325 * resMultiplier);
+      const overlayHeight = Math.round(baseOverlayHeight * Math.max(0.85, Math.min(1.45, (fontScale - 1.0) * 0.75 + 1.0)));
+      const overlayY = renderHeight - overlayHeight - overlayMargin;
 
       ctx.save();
 
-      // Translucent Backdrop Fill (Glassmorphism)
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-      ctx.shadowBlur = 14;
+      // Translucent Backdrop Fill (Glassmorphism with HD blur)
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+      ctx.shadowBlur = Math.round(16 * resMultiplier);
 
       if (style === 'dark') {
         ctx.fillStyle = `rgba(0, 38, 100, ${overlayOpacity})`; /* Translucent #002664 Navy */
-        ctx.strokeStyle = 'rgba(0, 169, 224, 0.55)';          /* Translucent Cyan Border */
+        ctx.strokeStyle = 'rgba(0, 169, 224, 0.6)';          /* Translucent Cyan Border */
       } else {
         ctx.fillStyle = `rgba(240, 239, 235, ${overlayOpacity})`; /* Translucent Warm White */
-        ctx.strokeStyle = 'rgba(0, 38, 100, 0.35)';
+        ctx.strokeStyle = 'rgba(0, 38, 100, 0.4)';
       }
 
-      ctx.lineWidth = 2.5;
+      ctx.lineWidth = Math.round(2.5 * resMultiplier);
       roundRect(ctx, overlayMargin, overlayY, overlayWidth, overlayHeight, borderRadius, true, true);
       ctx.shadowBlur = 0;
 
       // Top Category Accent Line
       ctx.fillStyle = catTheme.color;
-      roundRect(ctx, overlayMargin, overlayY, overlayWidth, 6, { tl: borderRadius, tr: borderRadius, bl: 0, br: 0 }, true, false);
+      roundRect(ctx, overlayMargin, overlayY, overlayWidth, Math.round(6 * resMultiplier), { tl: borderRadius, tr: borderRadius, bl: 0, br: 0 }, true, false);
 
       const textColorPrimary = style === 'dark' ? '#FFFFFF' : '#002664';
       const textColorSecondary = style === 'dark' ? '#00a9e0' : '#002664';
@@ -2270,113 +2470,127 @@ GENERADO EL: ${today} A LAS ${generatedTime}
         ? document.getElementById('img-logo-dark') 
         : document.getElementById('img-logo-light');
 
-      let headerTextX = overlayMargin + 20;
+      let headerTextX = overlayMargin + Math.round(18 * resMultiplier);
+      const logoTargetHeight = Math.round(48 * resMultiplier * Math.min(1.2, Math.max(0.85, fontScale)));
 
       if (eulenLogo && eulenLogo.complete && eulenLogo.naturalWidth > 0) {
-        const logoTargetHeight = 46;
         const logoAspect = eulenLogo.naturalWidth / eulenLogo.naturalHeight;
         const logoTargetWidth = logoTargetHeight * logoAspect;
-        const logoY = overlayY + 14;
+        const logoY = overlayY + Math.round(14 * resMultiplier);
 
-        ctx.drawImage(eulenLogo, overlayMargin + 16, logoY, logoTargetWidth, logoTargetHeight);
-        headerTextX = overlayMargin + 16 + logoTargetWidth + 16;
+        ctx.drawImage(eulenLogo, overlayMargin + Math.round(16 * resMultiplier), logoY, logoTargetWidth, logoTargetHeight);
+        headerTextX = overlayMargin + Math.round(16 * resMultiplier) + logoTargetWidth + Math.round(16 * resMultiplier);
       }
 
       // Header: DELEGACIÓN & NOMBRE DE CLIENTE
-      ctx.font = '800 20px Montserrat';
+      ctx.font = `800 ${Math.round(23 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = textColorPrimary;
       ctx.textAlign = 'left';
-      ctx.fillText(delegacion.toUpperCase(), headerTextX, overlayY + 34);
+      ctx.fillText(delegacion.toUpperCase(), headerTextX, overlayY + Math.round(36 * effectiveScale));
 
-      ctx.font = '700 13px Montserrat';
+      ctx.font = `700 ${Math.round(14 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = textColorMuted;
-      ctx.fillText(`Cliente: ${cliente} | Supervisor: ${currentInspectorName}`, headerTextX, overlayY + 54);
+      ctx.fillText(`Cliente: ${cliente} | Supervisor: ${currentInspectorName}`, headerTextX, overlayY + Math.round(58 * effectiveScale));
 
       // CATEGORY BADGE (Compact Top Right)
       const badgeText = currentCategory.toUpperCase();
-      ctx.font = '800 12px Montserrat';
-      const badgeWidth = ctx.measureText(badgeText).width + 24;
-      const badgeX = overlayMargin + overlayWidth - badgeWidth - 16;
-      const badgeY = overlayY + 14;
+      ctx.font = `800 ${Math.round(12.5 * effectiveScale)}px Montserrat`;
+      const badgeWidth = ctx.measureText(badgeText).width + Math.round(24 * resMultiplier);
+      const badgeHeight = Math.round(28 * effectiveScale);
+      const badgeX = overlayMargin + overlayWidth - badgeWidth - Math.round(16 * resMultiplier);
+      const badgeY = overlayY + Math.round(14 * resMultiplier);
 
       ctx.fillStyle = catTheme.color;
-      roundRect(ctx, badgeX, badgeY, badgeWidth, 28, 7, true, false);
+      roundRect(ctx, badgeX, badgeY, badgeWidth, badgeHeight, Math.round(7 * resMultiplier), true, false);
 
       ctx.fillStyle = '#FFFFFF';
       ctx.textAlign = 'center';
-      ctx.fillText(badgeText, badgeX + (badgeWidth / 2), badgeY + 18);
+      ctx.fillText(badgeText, badgeX + (badgeWidth / 2), badgeY + Math.round(19 * effectiveScale));
 
       // Subtle Divider Line
+      const dividerY = overlayY + Math.max(logoTargetHeight + Math.round(18 * resMultiplier), Math.round(72 * effectiveScale));
       ctx.strokeStyle = style === 'dark' ? 'rgba(255, 255, 255, 0.18)' : 'rgba(0, 38, 100, 0.18)';
       ctx.beginPath();
-      ctx.moveTo(overlayMargin + 16, overlayY + 68);
-      ctx.lineTo(overlayMargin + overlayWidth - 16, overlayY + 68);
+      ctx.moveTo(overlayMargin + Math.round(16 * resMultiplier), dividerY);
+      ctx.lineTo(overlayMargin + overlayWidth - Math.round(16 * resMultiplier), dividerY);
       ctx.stroke();
 
       // TWO COLUMN STREAMLINED CONTENT LAYOUT
-      const contentY = overlayY + 90;
-      const leftColX = overlayMargin + 20;
-      const rightColX = overlayMargin + (overlayWidth * 0.52);
+      const colGap = Math.round(24 * resMultiplier);
+      const colWidth = (overlayWidth - Math.round(32 * resMultiplier) - colGap) / 2;
+      const leftColX = overlayMargin + Math.round(16 * resMultiplier);
+      const rightColX = leftColX + colWidth + colGap;
+      const contentY = dividerY + Math.round(22 * effectiveScale);
 
       // Left Column: Activity & Field Observation
-      ctx.font = '800 12px Montserrat';
+      ctx.font = `800 ${Math.round(12.5 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = textColorSecondary;
       ctx.textAlign = 'left';
       ctx.fillText("SERVICIO / ACTIVIDAD:", leftColX, contentY);
 
-      ctx.font = '700 13px Montserrat';
+      const actLabelW = ctx.measureText("SERVICIO / ACTIVIDAD: ").width;
+      ctx.font = `700 ${Math.round(14.5 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = textColorPrimary;
-      ctx.fillText(activity, leftColX + 155, contentY);
+      ctx.fillText(activity, leftColX + actLabelW, contentY);
 
-      ctx.font = '800 12px Montserrat';
+      const hallazgoLabelY = contentY + Math.round(26 * effectiveScale);
+      ctx.font = `800 ${Math.round(12.5 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = textColorSecondary;
-      ctx.fillText("HALLAZGO HSEQ:", leftColX, contentY + 24);
+      ctx.fillText("HALLAZGO HSEQ:", leftColX, hallazgoLabelY);
 
-      ctx.font = '600 13px Montserrat';
+      ctx.font = `600 ${Math.round(14 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = textColorMuted;
-      wrapText(ctx, description, leftColX, contentY + 44, (overlayWidth * 0.48), 18);
+      const descLineHeight = Math.round(20 * effectiveScale);
+      const descStartY = hallazgoLabelY + Math.round(18 * effectiveScale);
+      wrapText(ctx, description, leftColX, descStartY, colWidth, descLineHeight, 4);
 
       // Right Column: Date, Coords & Weather
-      ctx.font = '800 12px Montserrat';
+      ctx.font = `800 ${Math.round(12.5 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = textColorSecondary;
       ctx.fillText("FECHA / HORA:", rightColX, contentY);
 
-      ctx.font = '700 13px Montserrat';
+      const dateLabelW = ctx.measureText("FECHA / HORA: ").width;
+      ctx.font = `700 ${Math.round(14.5 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = textColorPrimary;
-      ctx.fillText(`${dateStr} ${timeStr}`, rightColX + 102, contentY);
+      ctx.fillText(`${dateStr} ${timeStr}`, rightColX + dateLabelW, contentY);
 
-      ctx.font = '800 12px Montserrat';
+      const gpsLabelY = contentY + Math.round(26 * effectiveScale);
+      ctx.font = `800 ${Math.round(12.5 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = textColorSecondary;
-      ctx.fillText("UBICACIÓN GPS:", rightColX, contentY + 24);
+      ctx.fillText("UBICACIÓN GPS:", rightColX, gpsLabelY);
 
+      const coordsY = gpsLabelY + Math.round(18 * effectiveScale);
       if (hasGPSFix) {
-        ctx.font = '700 12px Montserrat';
+        ctx.font = `700 ${Math.round(13.5 * effectiveScale)}px Montserrat`;
         ctx.fillStyle = textColorPrimary;
-        ctx.fillText(`${coords} (±${latestAccuracy}m)`, rightColX + 108, contentY + 24);
+        ctx.fillText(`${coords} (±${latestAccuracy}m)`, rightColX, coordsY);
       } else {
-        ctx.font = '800 11px Montserrat';
+        ctx.font = `800 ${Math.round(12.5 * effectiveScale)}px Montserrat`;
         ctx.fillStyle = '#f5333f';
-        ctx.fillText("⚠️ NO VERIFICADA (GPS INACTIVO)", rightColX + 108, contentY + 24);
+        ctx.fillText("⚠️ NO VERIFICADA (GPS INACTIVO)", rightColX, coordsY);
       }
 
-      ctx.font = '800 12px Montserrat';
+      const weatherY = coordsY + Math.round(24 * effectiveScale);
+      ctx.font = `800 ${Math.round(12.5 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = textColorSecondary;
-      ctx.fillText("CLIMA:", rightColX, contentY + 48);
+      ctx.fillText("CLIMA & ZONA:", rightColX, weatherY);
 
-      ctx.font = '700 12px Montserrat';
+      const weatherLabelW = ctx.measureText("CLIMA & ZONA: ").width;
+      ctx.font = `700 ${Math.round(13.5 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = textColorPrimary;
-      ctx.fillText(weather, rightColX + 54, contentY + 48);
+      ctx.fillText(`${weather} | ${city}`, rightColX + weatherLabelW, weatherY);
 
       // Watermark Verification Tag
-      ctx.font = '700 10px Montserrat';
+      const watermarkY = overlayY + overlayHeight - Math.round(12 * resMultiplier);
+      ctx.font = `700 ${Math.round(11 * effectiveScale)}px Montserrat`;
       ctx.fillStyle = hasGPSFix 
-        ? (style === 'dark' ? 'rgba(232, 230, 223, 0.7)' : 'rgba(0, 38, 100, 0.7)')
+        ? (style === 'dark' ? 'rgba(232, 230, 223, 0.75)' : 'rgba(0, 38, 100, 0.75)')
         : '#f5333f';
       ctx.textAlign = 'right';
       const watermarkTag = hasGPSFix
         ? "SISTEMA HSEQ FIELD PRO - GRUPO EULEN COLOMBIA - REGISTRO AUDITADO Y GEORREFERENCIADO"
         : "SISTEMA HSEQ FIELD PRO - GRUPO EULEN COLOMBIA - ⚠️ REGISTRO SIN GEORREFERENCIACIÓN SATELITAL";
-      ctx.fillText(watermarkTag, overlayMargin + overlayWidth - 16, overlayY + overlayHeight - 12);
+      ctx.fillText(watermarkTag, overlayMargin + overlayWidth - Math.round(16 * resMultiplier), watermarkY);
 
       ctx.restore();
     }
@@ -2400,10 +2614,12 @@ GENERADO EL: ${today} A LAS ${generatedTime}
       if (stroke) ctx.stroke();
     }
 
-    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 4) {
+      if (!text) return;
       const words = text.split(' ');
       let line = '';
       let currentY = y;
+      let lineCount = 0;
 
       for (let n = 0; n < words.length; n++) {
         const testLine = line + words[n] + ' ';
@@ -2411,13 +2627,14 @@ GENERADO EL: ${today} A LAS ${generatedTime}
         const testWidth = metrics.width;
 
         if (testWidth > maxWidth && n > 0) {
+          lineCount++;
+          if (lineCount >= maxLines) {
+            ctx.fillText(line.trim() + '...', x, currentY);
+            return;
+          }
           ctx.fillText(line, x, currentY);
           line = words[n] + ' ';
           currentY += lineHeight;
-          if (currentY > y + (lineHeight * 2)) {
-            ctx.fillText(line + '...', x, currentY);
-            return;
-          }
         } else {
           line = testLine;
         }
@@ -2429,14 +2646,15 @@ GENERADO EL: ${today} A LAS ${generatedTime}
       const canvas = document.getElementById('hseq-canvas');
       const client = document.getElementById('input-client').value.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'eulen';
       const timestamp = new Date().toISOString().slice(0, 10);
-      const filename = `EULEN_HSEQ_${currentCategory.replace(/\s+/g, '')}_${client}_${timestamp}.png`;
+      const resTag = currentResolution === '2k' ? '2K_QHD' : '1080p_FHD';
+      const filename = `EULEN_HSEQ_${currentCategory.replace(/\s+/g, '')}_${client}_${resTag}_${timestamp}.png`;
 
       const link = document.createElement('a');
       link.download = filename;
       link.href = canvas.toDataURL('image/png', 1.0);
       link.click();
 
-      showToast("Foto con sello Grupo Eulen descargada", "success");
+      showToast(`Foto estampa descargada en ${currentResolution === '2k' ? '2K Ultra HD (1440x2560)' : 'Full HD 1080p'}`, "success");
     }
 
     function exportGPSToExcel() {
